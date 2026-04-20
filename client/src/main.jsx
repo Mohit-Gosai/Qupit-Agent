@@ -8,7 +8,7 @@ import About from './routes/About.jsx'
 import Service from './routes/Service.jsx'
 import HowItWork from './routes/HowItWork.jsx'
 import Template from './routes/Template.jsx'
-import AuthCard from './routes/AuthCard.jsx'
+import AuthenticationPage from './routes/AuthenticationPage.jsx'
 import Community from './routes/Community.jsx'
 
 const route = createBrowserRouter([
@@ -42,7 +42,7 @@ const route = createBrowserRouter([
       },
       {
         path:"login",
-        element:<AuthCard/>
+        element:<AuthenticationPage/>
       },
     ]
 
