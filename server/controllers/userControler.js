@@ -42,30 +42,43 @@ const userSignIn = async (req, res) => {
 
 
 // LOGIN 
+// userControler.js
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. Check if email and password exist
+        // 1. Validation check
         if (!email || !password) {
-            return res.status(400).json({ message: "Please provide email and password" });
+            return res.status(400).json({ 
+                success: false, 
+                message: "Please provide both email and password" 
+            });
         }
 
-        // 2. Find user & include password (since it's hidden by default in schema)
+        // 2. Find user & explicitly select password (because select: false in schema)
         const user = await userModal.findOne({ email }).select('+password');
 
-        // 3. Check if user exists and password is correct
+        // 3. Check if user exists and password matches
         if (!user || !(await user.correctPassword(password, user.password))) {
-            return res.status(401).json({ message: "Incorrect email or password" });
+            return res.status(401).json({ 
+                success: false, 
+                message: "Incorrect email or password" 
+            });
         }
 
-        // 4. Send token
+        // 4. If everything is okay, send the token
         const token = signToken(user._id);
-        res.status(200).json({ success: true, token });
+
+        res.status(200).json({
+            success: true,
+            token,
+            message: "Logged in successfully!"
+        });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-module.exports = { userSignIn, login, allUsers: require('./userControler').allUsers };
+module.exports = { userSignIn, login };

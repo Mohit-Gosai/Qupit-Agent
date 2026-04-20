@@ -10,6 +10,7 @@ import HowItWork from './routes/HowItWork.jsx'
 import Template from './routes/Template.jsx'
 import AuthenticationPage from './routes/AuthenticationPage.jsx'
 import Community from './routes/Community.jsx'
+import UserDashboard from './routes/UserDashboard.jsx'
 
 const route = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const route = createBrowserRouter([
         path:"login",
         element:<AuthenticationPage/>
       },
+      {
+        path: "dashboard",
+        element:<UserDashboard/>
+      }
     ]
 
   }

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
     // The "Agent Name" or handle (e.g., Matrix)
@@ -50,9 +50,11 @@ const userSchema = new mongoose.Schema({
 // Pre-save middleware to hash password before saving to MongoDB
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
-    
-    this.password = await bcrypt.hash(this.password, 12);
-    next();
+    try {
+        this.password = await bcrypt.hash(this.password, 12);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Instance method to check if password is correct during login
