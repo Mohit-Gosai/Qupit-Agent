@@ -1,38 +1,69 @@
-const userModal = require('../config/userConfig')
-const bcrypt = require('bcrypt')
+const userModal = require('../config/userConfig');
+const jwt = require('jsonwebtoken');
 
+// Helper function to create JWT
+const signToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN
+    });
+};
 
-const allUsers = async (req, res) => {
-    try {
-        const user = await userModal.find(req.body);
-        res.status(200).json({ staus: "OK", message: "all users on qupit againt is avalaible hare!!", data: user })
-    } catch (error) {
-        res.status(500).json({ staus: "OK", message: "users are not found!!", data: error.message })
-    }
-}
-
+// SIGNUP 
 const userSignIn = async (req, res) => {
     try {
-        const { userName, userEmail, password } = req.body;
+        const { username, email, password } = req.body;
 
-        // MISSING CHECK 1: Check if all fields exist
-        if (!userName || !userEmail || !password) {
-            return res.status(400).json({ message: "All fields are required" });
+        // 1. Check if user already exists
+        const userExists = await userModal.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: "User already exists" });
         }
 
-        // MISSING CHECK 2: Prevent duplicate emails
-        const exists = await userModal.findOne({ userEmail });
-        if (exists) {
-            return res.status(400).json({ message: "Email already registered" });
+        // 2. Create new user (Schema middleware will hash the password)
+        const newUser = await userModal.create({
+            username,
+            email,
+            password
+        });
+
+        // 3. Generate Token
+        const token = signToken(newUser._id);
+
+        res.status(201).json({
+            success: true,
+            token,
+            data: { user: newUser }
+        });
+    } catch (error) {
+        res.status(400).json({ status: "fail", message: error.message });
+    }
+};
+
+// LOGIN 
+const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // 1. Check if email and password exist
+        if (!email || !password) {
+            return res.status(400).json({ message: "Please provide email and password" });
         }
 
-        // Proceed to create
-        const newUser = await userModal.create({ userName, userEmail, password });
-        res.status(201).json({ success: true, data: newUser });
+        // 2. Find user & include password (since it's hidden by default in schema)
+        const user = await userModal.findOne({ email }).select('+password');
+
+        // 3. Check if user exists and password is correct
+        if (!user || !(await user.correctPassword(password, user.password))) {
+            return res.status(401).json({ message: "Incorrect email or password" });
+        }
+
+        // 4. Send token
+        const token = signToken(user._id);
+        res.status(200).json({ success: true, token });
 
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-module.exports = { userSignIn, allUsers }
+module.exports = { userSignIn, login, allUsers: require('./userControler').allUsers };

@@ -62,4 +62,4 @@ const letterSchema = new mongoose.Schema(
 );
 
 // Exporting as a Model for professional use
-module.exports = mongoose.model('Letter', letterSchema);
+module.exports = letterSchema;
