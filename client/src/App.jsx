@@ -4,9 +4,24 @@ import { Outlet } from 'react-router-dom'
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
+
+  const authentication = async () => {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch('http://127.0.0.1:5000/api/userdata', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // This is what the Guard looks for
+      }
+    });
+  }
+
+  authentication(); // Call this function to check if the user is authenticated when the app loads
+
   return (
     <div className="bg-[#14111E] min-h-screen selection:bg-[#FFB7C5]/30 selection:text-[#FFB7C5]">
-      {!isLogin && <Navbar />}
+      <Navbar />
       {/* The Outlet will render Home, About, Template, etc. based on the URL */}
       <Outlet context={{ isLogin, setIsLogin }} />
 

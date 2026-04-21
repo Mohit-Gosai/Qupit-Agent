@@ -9,4 +9,19 @@ const allLetters = async (req, res) => {
     }
 }
 
-module.exports = { allLetters }
+const createLetter = async (req, res) => {
+    try {
+        // Because of the 'protect' middleware, we have req.user.id
+        const newLetter = await letterModal.create({
+            ...req.body,
+            authorId: req.user.id, // Securely assigned from the token
+            sender: req.user.username 
+        });
+        
+        res.status(201).json({ success: true, data: newLetter });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { allLetters, createLetter }

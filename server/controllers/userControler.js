@@ -8,6 +8,16 @@ const signToken = (id) => {
     });
 };
 
+// Get all users (Protected Route)
+const allUsers = async (req, res) => {
+    try {
+        const users = await userModal.find({}).select('-password'); // Exclude passwords
+        res.status(200).json({ success: true, message: "Data retrieved successfully", data: users });
+    } catch (error) {
+        res.status(404).json({ success: false, message: error.message });
+    }
+};
+
 // SIGNUP 
 const userSignIn = async (req, res) => {
     try {
@@ -81,4 +91,4 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { userSignIn, login };
+module.exports = { userSignIn, login, allUsers };
