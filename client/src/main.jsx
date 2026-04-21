@@ -11,44 +11,49 @@ import Template from './routes/Template.jsx'
 import AuthenticationPage from './routes/AuthenticationPage.jsx'
 import Community from './routes/Community.jsx'
 import UserDashboard from './routes/UserDashboard.jsx'
+import ProtectRoute from './components/ProtectRoute.jsx'
 
 const route = createBrowserRouter([
   {
     path: "/",
-    element: <App/>,
+    element: <App />,
     children: [
       {
-        path:"",
-        element:<Home/>
+        path: "",
+        element: <Home />
       },
       {
-        path:"About",
-        element:<About/>
+        path: "About",
+        element: <About />
       },
       {
-        path:"Service",
-        element:<Service/>
+        path: "Service",
+        element: <Service />
       },
       {
-        path:"how-it-works",
-        element:<HowItWork/>
+        path: "how-it-works",
+        element: <HowItWork />
       },
       {
-        path:"templates",
-        element:<Template/>
+        path: "templates",
+        element: <Template />
       },
       {
-        path:"community",
-        element:<Community/>
+        path: "community",
+        element: <Community />
       },
       {
-        path:"login",
-        element:<AuthenticationPage/>
+        path: "login",
+        element: <AuthenticationPage />
       },
       {
         path: "dashboard",
-        element:<UserDashboard/>
-      }
+        element: (
+          <ProtectRoute>
+            <UserDashboard />
+          </ProtectRoute>
+        )
+      },
     ]
 
   }
@@ -56,6 +61,6 @@ const route = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={route}/>
+    <RouterProvider router={route} />
   </StrictMode>,
 )
