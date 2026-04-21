@@ -1,16 +1,21 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 const ProtectRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const location = useLocation();
+  const navigate = useNavigate();
 
-  if (!token) {
-    // No badge? Send them to the login desk.
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  useEffect(() => {
+    if (!token) {
+      // Use navigate for a more "active" redirect
+      navigate('/login', { replace: true, state: { from: location } });
+    }
+  }, [token, navigate, location]);
 
-  return children; // Has badge? Let them in.
+  if (!token) return null; // Don't render anything while redirecting
+
+  return children;
 };
 
 export default ProtectRoute;

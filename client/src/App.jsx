@@ -4,7 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom' // Add useLocation
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
-<<<<<<< HEAD
+
 
   const checkAuth = async () => {
 
@@ -18,7 +18,7 @@ export default function App() {
       }
     });
   }
-=======
+
   const location = useLocation(); // Get current URL path
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function App() {
   // Define which paths should NOT show the default Navbar
   const hideNavbarPaths = ['/dashboard'];
   const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
->>>>>>> be8c7bd8fbb1fcaecb44520cc94fb04c3a9272e1
+  //  be8c7bd8fbb1fcaecb44520cc94fb04c3a9272e1
 
   return (
     <div className="bg-[#14111E] min-h-screen">

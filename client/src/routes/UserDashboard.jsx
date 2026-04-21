@@ -1,121 +1,152 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Link, Links, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+
+// Import our Tool Components
+import { BackgroundTool } from '../components/EditorTools/BackgroundTool';
+import { TextTool } from '../components/EditorTools/TextTool';
+import { CanvasObjectTool } from '../components/EditorTools/CanvasObjectTool';
+import { VisualCanvas } from '../components/VisualCanvas';
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
+  const [view, setView] = useState('list'); 
   const [letters, setLetters] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); 
+  
+  // State aligned with lettersSchema.js
+  const [config, setConfig] = useState({
+    title: '',
+    recipient: '',
+    sender: 'User',
+    message: '',
+    relation: 'Friend',
+    text: {
+      fontStyle: 'serif',
+      textColor: '#ffffff',
+      textSize: 18,
+      textType: 'Paragraph'
+    },
+    canvas: {
+      background: '#1A1828',
+      hasObject: false,
+      objects: 'None',
+      objectCount: 20,
+      objectSize: 10,
+      objectsMotion: 'Bounce',
+      isFullScreen: true
+    }
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/login'); // Now this will work
+    navigate('/login');
   };
-
-  // Fetch only the letters belonging to this user
-  useEffect(() => {
-    const fetchMyLetters = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://127.0.0.1:5000/api/my-letters', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const result = await response.json();
-        if (result.success) setLetters(result.data);
-      } catch (err) {
-        console.error("Failed to fetch letters", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMyLetters();
-  }, []);
-
 
   return (
     <div className="flex min-h-screen bg-[#0B0914] text-white">
-      {/* Sidebar - Atlas Style */}
-      <aside className="w-64 border-r border-white/5 bg-[#14111E] p-6 hidden md:block">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-[#FFB7C5] to-[#A78BFA] bg-clip-text text-transparent mb-10">
-          Qupit Agent
-        </h1>
-        <nav className="space-y-4">
-          <div className="text-xs uppercase text-white/30 tracking-widest mb-4">Deployment</div>
-          <button className="flex items-center gap-3 w-full p-3 rounded-lg bg-white/5 text-[#FFB7C5]">
-            <span>📬</span> My Letters
-          </button>
-          <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/5 transition-all text-white/60">
-            <span>🎨</span> Templates
-          </button>
-          <div className="text-xs uppercase text-white/30 tracking-widest mt-8 mb-4">Security</div>
-          <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/5 transition-all text-white/60">
-            <span>🔑</span> Access Control
+      
+      {/* SIDEBAR */}
+      <aside className="w-64 border-r border-white/5 bg-[#14111E] p-6 flex flex-col z-20">
+        <div className="mb-10">
+          <h2 className="text-[#FFB7C5] font-black text-2xl">Qupit.</h2>
+          <p className="text-[10px] text-white/20 uppercase tracking-[0.3em]">Agent Dashboard</p>
+        </div>
+
+        <button 
+          onClick={() => setView('create')}
+          className={`w-full py-4 rounded-2xl font-bold mb-8 transition-all ${
+            view === 'create' ? 'bg-white text-black shadow-lg' : 'bg-[#FFB7C5] text-[#14111E]'
+          }`}
+        >
+          {view === 'create' ? 'Architect Mode' : '+ New Letter'}
+        </button>
+
+        <nav className="flex-1">
+          <button 
+            onClick={() => setView('list')}
+            className={`w-full text-left p-3 rounded-xl ${view === 'list' ? 'bg-white/5' : 'text-white/40'}`}
+          >
+            Active Missions
           </button>
         </nav>
+
+        <button onClick={handleLogout} className="p-3 text-left text-white/20 hover:text-red-400 text-xs">
+          Logout
+        </button>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <header className="flex justify-between items-center mb-10">
-          <div>
-            <h2 className="text-2xl font-semibold">User Cluster</h2>
-            <p className="text-white/40 text-sm">Overview of your heartfelt digital assets</p>
-          </div>
-          <div className="flex gap-4">
-
-            <button className="bg-[#FFB7C5] text-[#14111E] px-6 py-2 rounded-full font-bold hover:scale-105 transition-all">
-              + New Letter
-            </button>
-            <button onClick={() => handleLogout()} className="bg-[#FFB7C5] text-[#14111E] px-6 py-2 rounded-full font-bold hover:scale-105 transition-all">
-              Logout
-            </button>
-          </div>
-        </header>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[
-            { label: 'Total Letters', value: letters.length },
-            { label: 'Read by Recipients', value: '0' },
-            { label: 'Agent Status', value: 'Active' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-[#1A1828] border border-white/10 p-6 rounded-2xl">
-              <div className="text-white/40 text-xs uppercase mb-1">{stat.label}</div>
-              <div className="text-2xl font-mono text-[#A78BFA]">{stat.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Letters List (Atlas "Cluster" View) */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium mb-4">Active Letters</h3>
-          {loading ? (
-            <div className="animate-pulse h-20 bg-white/5 rounded-2xl" />
-          ) : letters.length === 0 ? (
-            <div className="border-2 border-dashed border-white/5 rounded-3xl p-20 text-center text-white/20">
-              No letters deployed yet. Start your first mission.
-            </div>
+      {/* WORKSPACE */}
+      <main className="flex-1 relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          {view === 'list' ? (
+            /* LIST VIEW */
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-10">
+              <h1 className="text-3xl font-bold mb-8">Your Deployments</h1>
+              <div className="grid gap-4">
+                {/* Your letters.map logic here */}
+                <div className="border-2 border-dashed border-white/5 rounded-[3rem] py-20 text-center text-white/20">
+                  Ready for a new mission.
+                </div>
+              </div>
+            </motion.div>
           ) : (
-            letters.map((letter) => (
-              <motion.div
-                key={letter._id}
-                whileHover={{ x: 10 }}
-                className="bg-[#1A1828] border border-white/10 p-5 rounded-2xl flex justify-between items-center"
-              >
-                <div>
-                  <div className="font-medium text-lg">{letter.title}</div>
-                  <div className="text-sm text-white/40">Sent to: {letter.recipient}</div>
+            /* ARCHITECT VIEW */
+            <motion.div key="create" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex h-full">
+              
+              {/* TOOLBAR */}
+              <section className="w-80 border-r border-white/5 bg-[#14111E]/50 p-8 overflow-y-auto space-y-8">
+                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB7C5]">Configuration</span>
+                  <button onClick={() => setView('list')} className="text-[10px] text-white/20 hover:text-white">Exit</button>
                 </div>
-                <div className="flex gap-4">
-                  <span className="px-3 py-1 bg-green-500/10 text-green-400 text-xs rounded-full border border-green-500/20">
-                    Deployed
-                  </span>
-                  <button className="text-white/20 hover:text-white transition-colors">Edit</button>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] text-white/30 uppercase">Letter Title</label>
+                   <input 
+                     type="text" 
+                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:outline-none" 
+                     placeholder="Mission Name..."
+                     onChange={(e) => setConfig({...config, title: e.target.value})}
+                   />
                 </div>
-              </motion.div>
-            ))
+
+                <BackgroundTool config={config} setConfig={setConfig} />
+                <CanvasObjectTool config={config} setConfig={setConfig} />
+                <TextTool config={config} setConfig={setConfig} />
+
+                <button className="w-full py-4 bg-white text-black font-black rounded-2xl hover:scale-[1.02] transition-all">
+                  DEPLOY TO MONGODB
+                </button>
+              </section>
+
+              {/* LIVE CANVAS PREVIEW */}
+              <section className="flex-1 bg-[#050505] p-12 flex items-center justify-center">
+                <div 
+                  className="relative w-full max-w-md aspect-[3/4] rounded-[3rem] shadow-2xl overflow-hidden transition-colors duration-700"
+                  style={{ backgroundColor: config.canvas.background }}
+                >
+                  {/* HTML5 CANVAS LAYER */}
+                  <VisualCanvas config={config} />
+
+                  {/* TEXT LAYER */}
+                  <div className="relative z-10 h-full p-12 flex flex-col justify-center text-center">
+                    <p 
+                      style={{ 
+                        fontFamily: config.text.fontStyle, 
+                        color: config.text.textColor, 
+                        fontSize: `${config.text.textSize}px` 
+                      }}
+                      className="leading-relaxed drop-shadow-md"
+                    >
+                      {config.message || "Your message appears here..."}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </main>
     </div>
   );
