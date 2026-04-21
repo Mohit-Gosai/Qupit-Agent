@@ -1,34 +1,53 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom' // Add useLocation
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation(); // Get current URL path
 
-  const authentication = async () => {
-    const token = localStorage.getItem('token');
-
-    const response = await fetch('http://127.0.0.1:5000/api/userdata', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // This is what the Guard looks for
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLogin(false);
+        return;
       }
-    });
-  }
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/userdata', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (result.success) {
+          setIsLogin(true);
+        } else {
+          localStorage.removeItem('token');
+          setIsLogin(false);
+        }
+      } catch (err) {
+        setIsLogin(false);
+      }
+    };
+    verifySession();
+  }, []);
 
-  authentication(); // Call this function to check if the user is authenticated when the app loads
+  // Define which paths should NOT show the default Navbar
+  const hideNavbarPaths = ['/dashboard'];
+  const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
 
   return (
-    <div className="bg-[#14111E] min-h-screen selection:bg-[#FFB7C5]/30 selection:text-[#FFB7C5]">
-      <Navbar />
-      {/* The Outlet will render Home, About, Template, etc. based on the URL */}
+    <div className="bg-[#14111E] min-h-screen">
+      {/* Logic: Only show Navbar if we are NOT on the dashboard */}
+      {!shouldHideNavbar && <Navbar />}
+      
       <Outlet context={{ isLogin, setIsLogin }} />
 
-      {/* Simple Global Footer */}
-      <footer className="py-10 border-t border-white/5 text-center text-white/20 text-xs tracking-widest uppercase">
-        © 2026 Qupit Agent • Built with Heart
-      </footer>
+      {/* Footer logic: You might want to hide the footer on the dashboard too */}
+      {!shouldHideNavbar && (
+        <footer className="py-10 border-t border-white/5 text-center text-white/20 text-xs tracking-widest uppercase">
+          © 2026 Qupit Agent • Built with Heart
+        </footer>
+      )}
     </div>
   )
 }

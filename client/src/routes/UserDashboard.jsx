@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link, Links, useNavigate } from 'react-router-dom';
 
 const UserDashboard = () => {
   const [letters, setLetters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); 
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login'); // Now this will work
+  };
 
   // Fetch only the letters belonging to this user
   useEffect(() => {
@@ -23,6 +30,7 @@ const UserDashboard = () => {
     };
     fetchMyLetters();
   }, []);
+
 
   return (
     <div className="flex min-h-screen bg-[#0B0914] text-white">
@@ -53,9 +61,15 @@ const UserDashboard = () => {
             <h2 className="text-2xl font-semibold">User Cluster</h2>
             <p className="text-white/40 text-sm">Overview of your heartfelt digital assets</p>
           </div>
-          <button className="bg-[#FFB7C5] text-[#14111E] px-6 py-2 rounded-full font-bold hover:scale-105 transition-all">
-            + New Letter
-          </button>
+          <div className="flex gap-4">
+
+            <button className="bg-[#FFB7C5] text-[#14111E] px-6 py-2 rounded-full font-bold hover:scale-105 transition-all">
+              + New Letter
+            </button>
+            <button onClick={() => handleLogout()} className="bg-[#FFB7C5] text-[#14111E] px-6 py-2 rounded-full font-bold hover:scale-105 transition-all">
+              Logout
+            </button>
+          </div>
         </header>
 
         {/* Stats Grid */}
@@ -83,7 +97,7 @@ const UserDashboard = () => {
             </div>
           ) : (
             letters.map((letter) => (
-              <motion.div 
+              <motion.div
                 key={letter._id}
                 whileHover={{ x: 10 }}
                 className="bg-[#1A1828] border border-white/10 p-5 rounded-2xl flex justify-between items-center"
