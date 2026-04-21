@@ -4,6 +4,20 @@ import { Outlet } from 'react-router-dom'
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
+
+  const checkAuth = async () => {
+
+    const token = localStorage.getItem('token');
+  
+    const response = await fetch('http://127.0.0.1:5000/api/userdata', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // This is what the Guard looks for
+      }
+    });
+  }
+
   return (
     <div className="bg-[#14111E] min-h-screen selection:bg-[#FFB7C5]/30 selection:text-[#FFB7C5]">
       {!isLogin && <Navbar />}
