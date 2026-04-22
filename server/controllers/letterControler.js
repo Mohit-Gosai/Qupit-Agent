@@ -1,6 +1,6 @@
 const letterModel = require('../config/letterConfig')
 
-const allLetters = async (req, res) => {
+exports.allLetters = async (req, res) => {
     try {
         const letters = await letterModel.find({})
         res.status(200).json({ success: true, message: "data is resived successfully", data: letters })
@@ -9,19 +9,44 @@ const allLetters = async (req, res) => {
     }
 }
 
-const createLetter = async (req, res) => {
+
+// CREATE INITIAL DRAFT
+exports.createLetter = async (req, res) => {
     try {
-        // Because of the 'protect' middleware, we have req.user.id
-        const newLetter = await letterModal.create({
-            ...req.body,
-            authorId: req.user.id, // Securely assigned from the token
-            sender: req.user.username 
+        const { title, recipient, relation, slug } = req.body;
+        const newLetter = new letterModel({
+            authorId: req.user.id, // From your auth middleware
+            title,
+            recipient,
+            relation,
+            slug,
+            // Default empty message to start
+            message: "Start writing your secret message..." 
         });
-        
-        res.status(201).json({ success: true, data: newLetter });
+        const savedLetter = await newLetter.save();
+        res.status(201).json({ success: true, data: savedLetter });
     } catch (err) {
-        res.status(400).json({ success: false, message: err.message });
+        res.status(400).json({ success: false, error: err.message });
     }
 };
 
-module.exports = { allLetters, createLetter }
+// UPDATE/AUTO-SAVE DRAFT
+exports.updateLetter = async (req, res) => {
+    try {
+        // Find by ID and ensure the author owns it
+        const updatedLetter = await letterModel.findOneAndUpdate(
+            { _id: req.params.id, authorId: req.user.id },
+            { $set: req.body }, // Updates nested text/canvas objects automatically
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedLetter) {
+            return res.status(404).json({ success: false, message: "Letter not found" });
+        }
+
+        res.status(200).json({ success: true, data: updatedLetter });
+    } catch (err) {
+        res.status(400).json({ success: false, error: err.message });
+    }
+};
+

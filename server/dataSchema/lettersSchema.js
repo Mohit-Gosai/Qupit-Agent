@@ -11,7 +11,7 @@ const letterSchema = new mongoose.Schema(
         },
         title: { type: String, required: true },
         slug: { type: String, unique: true, required: true }, 
-        message: { type: String, minLength: 50 },
+        message: { type: String,  },
         writtenAt: { type: Date, default: Date.now },
         isPrivate: { type: Boolean, default: true },
         sender: { type: String, default: "user" },
