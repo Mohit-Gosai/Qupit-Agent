@@ -9,51 +9,72 @@ import { CanvasObjectTool } from '../components/EditorTools/CanvasObjectTool';
 import { VisualCanvas } from '../components/VisualCanvas';
 import { NewLetterModal } from '../components/Modals/NewLetterModal';
 
+import { ExplorePanel } from '../components/ExplorePanel';
+import { MissionsTable } from '../components/MissionsTable';
+
 const UserDashboard = () => {
   const navigate = useNavigate();
   const [view, setView] = useState('list');
   const [letters, setLetters] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [screenSize, setScreenSize] = useState('desktop'); // 'desktop' or 'mobile'
+  const [currentTab, setCurrentTab] = useState('missions'); // 'missions', 'explore', 'people'
 
   // inside UserDashboard.jsx
 
-  const handleCreateDraft = async (modalData) => {
+  const handleCreateDraft = (modalData) => {
+    // 1. Create the temporary draft object
+    const newDraft = {
+      ...modalData,
+      _isLocalDraft: true, // Internal flag to know it's not in DB yet
+      id: `draft-${Date.now()}`,
+      message: "",
+      canvas: config.canvas,
+      text: config.text
+    };
+
+    // 2. Save to Local Storage
+    localStorage.setItem('active_draft', JSON.stringify(newDraft));
+
+    // 3. Update State to trigger the UI shift
+    setConfig(newDraft);
+    setView('create');
+    setIsModalOpen(false);
+  };
+
+  const handleFinalizeAndPush = async () => {
     try {
       const token = localStorage.getItem('token');
+      const slug = config.title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
+      const [currentTab, setCurrentTab] = useState('missions'); // 'missions', 'explore', 'people'
 
-      // Auto-generate a slug from the title for the Schema requirement
-      const slug = modalData.title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
-      // Inside handleCreateDraft in UserDashboard.jsx
       const response = await fetch('http://127.0.0.1:5000/api/letters', {
         method: 'POST',
-        // ... headers
-        body: JSON.stringify({
-          ...modalData,
-          slug,
-          // This is now 63 characters - satisfying the minLength: 50
-          message: "This is a new draft mission. Your secret journey begins here. Stay safe agent.",
-          canvas: config.canvas,
-          text: config.text
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ...config, slug })
       });
 
       const result = await response.json();
-
       if (result.success) {
-        // 1. Update the local letters list
-        setLetters([result.data, ...letters]);
-        // 2. Set the current editor config to this new letter's data
-        setConfig(result.data);
-        // 3. Shift the layout to the Architect view
-        setView('create');
-        setIsModalOpen(false);
+        // 1. Add the new letter to your local state list
+        setLetters(prev => [result.data, ...prev]);
+
+        // 2. Clear the local storage draft
+        localStorage.removeItem('active_draft');
+
+        // 3. Reset the view and config to 'empty'
+        setView('list');
+        setConfig({ /* reset to initial state */ });
+
+        console.log("Mission Deployed! Redirecting to Dashboard...");
       }
     } catch (err) {
-      console.error("Failed to initiate mission:", err);
+      console.error("Deployment failed:", err);
     }
   };
-
 
 
   // State aligned with lettersSchema.js
@@ -116,71 +137,26 @@ const UserDashboard = () => {
   return (
     <div className="flex h-screen bg-[#0B0914] text-white overflow-hidden">
 
-      {/* LEFT SIDEBAR: Context-Aware */}
-      <aside className="w-80 border-r border-white/5 bg-[#14111E] flex flex-col z-30">
-        <div className="p-6 border-b border-white/5">
-          <h2 className="text-[#FFB7C5] font-black text-2xl tracking-tighter">Qupit.</h2>
-        </div>
+      <nav className="space-y-2 mt-8">
+        <button
+          onClick={() => setCurrentTab('missions')}
+          className={`w-full text-left p-4 rounded-2xl transition-all ${currentTab === 'missions' ? 'bg-[#FFB7C5] text-[#14111E] font-bold' : 'text-white/40 hover:bg-white/5'}`}
+        >
+          📂 Active Missions
+        </button>
+        <button
+          onClick={() => setCurrentTab('explore')}
+          className={`w-full text-left p-4 rounded-2xl transition-all ${currentTab === 'explore' ? 'bg-[#FFB7C5] text-[#14111E] font-bold' : 'text-white/40 hover:bg-white/5'}`}
+        >
+          🌐 Explore Community
+        </button>
+      </nav>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          {view === 'list' ? (
-            // Default Dashboard Nav
-            <nav className="space-y-4">
-              <button onClick={() => setIsModalOpen(true)} className="w-full py-4 bg-[#FFB7C5] text-[#14111E] rounded-2xl font-black mb-4">+ New Letter</button>
-              <button className="w-full text-left p-3 bg-white/5 rounded-xl">Active Letters</button>
-            </nav>
-          ) : (
-            // ARCHITECT TOOLS (Moved to Sidebar for more Canvas room)
-            <div className="space-y-10 animate-in slide-in-from-left-4">
-              <button onClick={() => setView('list')} className="text-[10px] text-white/20 hover:text-white uppercase tracking-widest">← Back to List</button>
-              <BackgroundTool config={config} setConfig={setConfig} />
-              <CanvasObjectTool config={config} setConfig={setConfig} />
-              <TextTool config={config} setConfig={setConfig} />
-              {/* Responsiveness Tool (Next to build) */}
-              <div className="pt-6 border-t border-white/5">
-                <button className="w-full py-4 bg-white text-black font-black rounded-2xl">Save Changes</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
 
-      {/* MAIN CONTENT: The Responsive Canvas */}
-      <main className="flex-1 bg-[#050505] relative flex flex-col">
-        <AnimatePresence mode="wait">
-          {view === 'list' ? (
-            <motion.div key="list" className="p-10 overflow-y-auto h-full">
-              <h1 className="text-3xl font-bold mb-8">User Cluster</h1>
-              {/* ... Letter List Cards ... */}
-            </motion.div>
-          ) : (
-            <motion.div key="architect" className="flex-1 flex flex-col h-full bg-[#050505]">
-              {/* Top Toolbar for Screen Size testing */}
-              <div className="h-14 border-b border-white/5 flex items-center justify-center gap-4 bg-[#14111E]/40">
-                <button onClick={() => setScreenSize('mobile')} className="p-2 hover:bg-white/5 rounded">📱</button>
-                <button onClick={() => setScreenSize('desktop')} className="p-2 hover:bg-white/5 rounded">💻</button>
-              </div>
-
-              {/* THE DYNAMIC PREVIEW AREA */}
-              <div className="flex-1 p-12 flex items-center justify-center overflow-hidden">
-                <div className={`transition-all duration-500 shadow-2xl rounded-[3rem] overflow-hidden relative ${screenSize === 'mobile' ? 'w-[375px] h-[667px]' : 'w-full max-w-4xl aspect-video'
-                  }`} style={{ backgroundColor: config.canvas.background }}>
-                  <VisualCanvas config={config} />
-                  <div className="relative z-10 p-12 h-full flex items-center justify-center text-center">
-                    <p style={{ fontFamily: config.text.fontStyle, color: config.text.textColor }}>{config.message}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <main className="flex-1 bg-[#050505] overflow-y-auto">
+        {currentTab === 'missions' && <MissionsTable letters={letters} />}
+        {currentTab === 'explore' && <ExplorePanel />}
       </main>
-
-      <NewLetterModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreateDraft}
-      />
     </div>
   );
 };

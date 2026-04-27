@@ -9,6 +9,21 @@ exports.allLetters = async (req, res) => {
     }
 }
 
+// In letterRoutes.js
+exports.getPublicLitters = async (req, res) => {
+    try {
+        // Fetch letters marked as public, excluding the message for privacy if needed
+        const publicLetters = await Letter.find({ isPrivate: false })
+            .select('title recipient relation canvas authorId createdAt')
+            .limit(20)
+            .sort({ createdAt: -1 });
+            
+        res.status(200).json({ success: true, data: publicLetters });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
 
 // CREATE INITIAL DRAFT
 exports.createLetter = async (req, res) => {

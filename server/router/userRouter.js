@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { userSignIn, login, allUsers } = require('../controllers/userControler');
 const { protect } = require('../middleware/authMiddleware'); // Import the guard
-const { createLetter, updateLetter } = require('../controllers/letterControler'); // Import letter controller for protected route
+const { createLetter, getPublicLitters, updateLetter } = require('../controllers/letterControler'); // Import letter controller for protected route
+
 
 // Public Routes
 router.post("/signup", userSignIn);
@@ -13,6 +14,9 @@ router.get("/userdata", protect, allUsers);
 
 // Route for creating the initial draft
 router.post('/Letters', protect, createLetter);
+// Route for fetching public letters
+router.get('/public-letters', getPublicLitters);
+// Route for updating the draft (Auto-Save)
 
 // Route for the Auto-Save (The one your frontend useEffect calls)
 router.put('/letters/:id', protect, updateLetter);
