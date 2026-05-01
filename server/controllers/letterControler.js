@@ -1,4 +1,5 @@
 const letterModel = require('../config/letterConfig')
+const userModal = require('../config/userConfig'); // MUST IMPORT USER TO UPDATE ARRAY[cite: 5]
 
 exports.allLetters = async (req, res) => {
     try {
@@ -25,26 +26,33 @@ exports.getPublicLitters = async (req, res) => {
 };
 
 
-// CREATE INITIAL DRAFT
-exports.createLetter = async (req, res) => {
-    try {
-        const { title, recipient, relation, slug } = req.body;
-        const newLetter = new letterModel({
-            authorId: req.user.id, // From your auth middleware
-            title,
-            recipient,
-            relation,
-            slug,
-            // Default empty message to start
-            message: "Start writing your secret message..." 
-        });
-        const savedLetter = await newLetter.save();
-        res.status(201).json({ success: true, data: savedLetter });
-    } catch (err) {
-        res.status(400).json({ success: false, error: err.message });
-    }
-};
 
+exports.createLetter = async (req, res) => {
+  try {
+    // 1. Correct extraction check
+    // req.user was attached by protect middleware, so req.user._id is correct
+    const letterData = {
+      ...req.body,
+      authorId: req.user._id, // Use _id (standard MongoDB)
+      sender: req.user.userName  
+    };
+    
+    // Change 'Letter' to 'letterModel' to match your import[cite: 5]
+    const newLetter = await letterModel.create(letterData);
+
+    // 2. Update the User's createdLetters array
+    // Change 'User' to 'userModal' to match the import[cite: 5, 6]
+    await userModal.findByIdAndUpdate(req.user._id, {
+      $push: { createdLetters: newLetter._id } 
+    });
+
+    res.status(201).json({ success: true, data: newLetter });
+  } catch (err) {
+    // This logs EXACTLY what is missing (e.g., "title is required")[cite: 5]
+    console.error("Mongoose Validation Error:", err.message); 
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
 // UPDATE/AUTO-SAVE DRAFT
 exports.updateLetter = async (req, res) => {
     try {
