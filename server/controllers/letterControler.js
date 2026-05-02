@@ -18,40 +18,47 @@ exports.getPublicLitters = async (req, res) => {
             .select('title recipient relation canvas authorId createdAt')
             .limit(20)
             .sort({ createdAt: -1 });
-            
+
         res.status(200).json({ success: true, data: publicLetters });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
 };
 
+// Controller
+exports.getMyLetters = async (req, res) => {
+    try {
+        // Find only letters where authorId matches the authenticated user[cite: 3]
+        const letters = await letterModel.find({ authorId: req.user._id }).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: letters });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// Route
+
 
 
 exports.createLetter = async (req, res) => {
-  try {
-    // 1. Correct extraction check
-    // req.user was attached by protect middleware, so req.user._id is correct
-    const letterData = {
-      ...req.body,
-      authorId: req.user._id, // Use _id (standard MongoDB)
-      sender: req.user.userName  
-    };
-    
-    // Change 'Letter' to 'letterModel' to match your import[cite: 5]
-    const newLetter = await letterModel.create(letterData);
+    try {
+        const letterData = {
+            ...req.body,
+            // Use req.user (populated by your protect middleware)
+            authorId: req.user._id,
+            sender: req.user.username // Match the key in your User schema
+        };
 
-    // 2. Update the User's createdLetters array
-    // Change 'User' to 'userModal' to match the import[cite: 5, 6]
-    await userModal.findByIdAndUpdate(req.user._id, {
-      $push: { createdLetters: newLetter._id } 
-    });
+        const newLetter = await letterModel.create(letterData);
 
-    res.status(201).json({ success: true, data: newLetter });
-  } catch (err) {
-    // This logs EXACTLY what is missing (e.g., "title is required")[cite: 5]
-    console.error("Mongoose Validation Error:", err.message); 
-    res.status(400).json({ success: false, error: err.message });
-  }
+        await userModal.findByIdAndUpdate(req.user._id, {
+            $push: { createdLetters: newLetter._id }
+        });
+
+        res.status(201).json({ success: true, data: newLetter });
+    } catch (err) {
+        res.status(400).json({ success: false, error: err.message });
+    }
 };
 // UPDATE/AUTO-SAVE DRAFT
 exports.updateLetter = async (req, res) => {

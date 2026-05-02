@@ -21,6 +21,7 @@ app.use(cors({
 app.use(express.json()); 
 
 app.use('/api', router); // Now the router has access to CORS and JSON parsing
+app.use('/api/letters', require('./router/letterRoutes')); // Ensure letter routes are also registered
 // -------------------------------------------------------
 
 app.get('/', (req, res) => res.send("Server is live!"));
