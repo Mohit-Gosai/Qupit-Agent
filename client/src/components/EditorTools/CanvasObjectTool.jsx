@@ -5,17 +5,21 @@ export const CanvasObjectTool = ({ config, setConfig }) => {
       <div className="grid grid-cols-2 gap-2">
         {['None', 'Circle', 'Heart', 'Star', 'Blob'].map(obj => (
           <button 
-            key={obj}
-            onClick={() => setConfig({
-              ...config, 
-              canvas: { ...config.canvas, objects: obj, hasObject: obj !== 'None' }
-            })}
-            className={`py-2 text-[10px] rounded-lg border transition-all ${
-              config.canvas.objects === obj ? 'bg-white text-black' : 'border-white/10 text-white/40'
-            }`}
-          >
-            {obj}
-          </button>
+    key={obj}
+    onClick={() => {
+      const isNone = obj === 'None';
+      onUpdate({
+        canvas: { 
+          ...section.canvas, 
+          objects: obj, 
+          hasObject: !isNone // Ensure this flips to TRUE[cite: 17]
+        }
+      });
+    }}
+    className={`...`}
+  >
+    {obj}
+  </button>
         ))}
       </div>
     </div>

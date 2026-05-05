@@ -1,25 +1,31 @@
+// src/components/VisualCanvas.jsx
 import React, { useRef, useEffect } from 'react';
 
-export const VisualCanvas = ({ config }) => {
+export const VisualCanvas = ({ section }) => { // Changed prop from config to section
   const canvasRef = useRef(null);
+
+  // 1. ADD THIS SAFETY GATE[cite: 16]
+  if (!section || !section.canvas) {
+    return null;
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
 
-    // Set internal resolution
-    canvas.width = 400;
-    canvas.height = 533;
+    canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
 
-    let particles = Array.from({ length: config.canvas.objectCount }, () => ({
+    // Use section data for particle generation
+    let particles = Array.from({ length: 30 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * config.canvas.objectSize + 2,
+      size: Math.random() * 3 + 2,
       speedY: Math.random() * 1 + 0.5,
-      opacity: Math.random()
     }));
 
+    
     const drawHeart = (x, y, size) => {
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -32,17 +38,16 @@ export const VisualCanvas = ({ config }) => {
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = config.text.textColor + '33'; // Matches text color with low opacity
+      // Automatically match particle color to text color with transparency
+      ctx.fillStyle = (section.content?.textColor || '#ffffff') + '88';
 
       particles.forEach(p => {
-        if (config.canvas.objects === 'Heart') drawHeart(p.x, p.y, p.size);
-        else if (config.canvas.objects === 'Circle') {
+        if (section.canvas?.objects === 'Heart') drawHeart(p.x, p.y, p.size);
+        else if (section.canvas?.objects === 'Circle') {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
         }
-
-        // Motion logic: 'Wave' or 'Bounce' (simplified)
         p.y -= p.speedY;
         if (p.y < -20) p.y = canvas.height + 20;
       });
@@ -50,11 +55,10 @@ export const VisualCanvas = ({ config }) => {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    if (config.canvas.hasObject) render();
-    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (section.canvas?.hasObject) render();
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [config.canvas, config.text.textColor]);
+  }, [section.canvas, section.content.textColor]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
 };

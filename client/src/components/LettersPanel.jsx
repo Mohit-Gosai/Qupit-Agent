@@ -11,8 +11,8 @@ export const LettersPanel = ({ letters, onEdit }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {letters.map((letter) => (
-                    <motion.div 
-                        key={letter._id || letter.id}
+                    <motion.div
+                        key={letter._id || letter.id || `draft-${letter.createdAt}`} // Add this key![cite: 12]
                         whileHover={{ scale: 1.02 }}
                         className="bg-[#14111E] border border-white/5 rounded-[2.5rem] p-6 flex flex-col group cursor-pointer"
                         onClick={() => onEdit(letter)}
@@ -21,9 +21,8 @@ export const LettersPanel = ({ letters, onEdit }) => {
                             <div className="w-10 h-10 rounded-2xl bg-[#FFB7C5]/10 flex items-center justify-center">
                                 <span className="text-[#FFB7C5] text-xl">✉️</span>
                             </div>
-                            <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${
-                                letter.isPrivate ? 'bg-white/5 text-white/40' : 'bg-green-500/10 text-green-400'
-                            }`}>
+                            <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${letter.isPrivate ? 'bg-white/5 text-white/40' : 'bg-green-500/10 text-green-400'
+                                }`}>
                                 {letter.isPrivate ? 'PRIVATE' : 'PUBLIC'}
                             </span>
                         </div>
@@ -31,7 +30,7 @@ export const LettersPanel = ({ letters, onEdit }) => {
                         <h3 className="text-lg font-bold text-white group-hover:text-[#FFB7C5] transition-colors truncate">
                             {letter.title}
                         </h3>
-                        
+
                         <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
                             <div className="flex justify-between text-[10px] uppercase tracking-widest text-white/20">
                                 <span>Recipient</span>

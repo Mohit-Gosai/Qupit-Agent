@@ -1,2 +1,6 @@
 @import "tailwindcss";
 box{font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;}
+/* Add this class to your h1 */
+.text-shadow-sm {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}

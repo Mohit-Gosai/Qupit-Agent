@@ -3,11 +3,15 @@ import { LettersPanel } from './LettersPanel';
 
 export const MissionsTable = ({ letters, onEdit, onDelete }) => {
     // Calculate metrics
-    const stats = {
-        total: letters.length,
-        active: letters.filter(l => !l.isPrivate).length,
-        drafts: letters.filter(l => l._isLocalDraft).length
-    };
+    // Inside MissionsTable.jsx[cite: 17]
+// Inside MissionsTable.jsx[cite: 13]
+// Inside MissionsTable.jsx
+const stats = {
+    total: letters.length,
+    active: letters.filter(l => !l.isPrivate && !l._isLocalDraft).length,
+    drafts: letters.filter(l => l._isLocalDraft === true).length, // Strict check[cite: 13]
+    nodes: new Set(letters.map(l => l.recipient)).size
+};
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-700">
             {/* STATS ROW: The "Atlas" Cluster View */}

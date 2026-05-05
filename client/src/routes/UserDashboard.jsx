@@ -3,62 +3,139 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 // Import our Tool Components
-import { BackgroundTool } from '../components/EditorTools/BackgroundTool';
-import { TextTool } from '../components/EditorTools/TextTool';
-import { CanvasObjectTool } from '../components/EditorTools/CanvasObjectTool';
 import { VisualCanvas } from '../components/VisualCanvas';
 import { NewLetterModal } from '../components/Modals/NewLetterModal';
-
 import { ExplorePanel } from '../components/ExplorePanel';
 import { MissionsTable } from '../components/MissionsTable';
-
-import { LettersPanel } from '../components/LettersPanel';
 import { Sidebar } from '../components/Sidebar';
-import PeoplePanel from '../components/PeoplePanel'; // No curly braces
+import PeoplePanel from '../components/PeoplePanel';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const [view, setView] = useState('list');
+  const [view, setView] = useState('list'); // 'list' or 'editor'
   const [letters, setLetters] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [screenSize, setScreenSize] = useState('desktop'); // 'desktop' or 'mobile'
-  const [currentTab, setCurrentTab] = useState('missions'); // 'missions', 'explore', 'people'
-  // 'missions', 'explore', 'people'
+  const [currentTab, setCurrentTab] = useState('missions');
 
-  // inside UserDashboard.jsx
+  // State aligned with your new Section-based Schema
+  const [config, setConfig] = useState({
+    title: '',
+    recipient: '',
+    relation: 'Friend',
+    sections: [] // Array of storyboard scenes
+  });
+  // Inside UserDashboard.jsx
+  const [activeSectionId, setActiveSectionId] = useState(null);
 
-    // 1. Create the temporary draft object
-    // Inside your onCreate handler
-const handleCreateDraft = (data) => {
-  const newDraft = {
-    ...data,
-    _isLocalDraft: true,
-    sections: [
-      {
-        id: Date.now(),
-        sectionName: "Introduction",
-        sectionType: "hero-reveal",
-        content: {
-          message: "It's Been 1 Month.",
-          subContent: "Scroll to explore"
-        }
-      }
-    ]
+  // Helper to update the currently selected section
+  const updateActiveSection = (updates) => {
+    const updatedSections = config.sections.map(sec =>
+      sec.id === activeSectionId ? { ...sec, ...updates } : sec
+    );
+    setConfig({ ...config, sections: updatedSections });
   };
-  setConfig(newDraft);
-  setView('editor');
 
+  // Inside UserDashboard.jsx
+  useEffect(() => {
+    if (view === 'editor' && config.sections?.length > 0) {
+      // Flag it as a local draft so it shows up in the table
+      const draftToSave = { ...config, _isLocalDraft: true };
+      localStorage.setItem('active_draft', JSON.stringify(draftToSave));
+    }
+  }, [config, view]);
 
-    // 2. Save to Local Storage
-    localStorage.setItem('active_draft', JSON.stringify(newDraft));
+  // Logic to load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('active_draft');
+    if (savedDraft) {
+      const parsedDraft = JSON.parse(savedDraft);
+      // Add the draft to the letters list so it appears in MissionsTable
+      setLetters(prev => {
+        const exists = prev.find(l => l.id === parsedDraft.id || l._isLocalDraft);
+        return exists ? prev : [parsedDraft, ...prev];
+      });
+    }
+  }, []);
 
-    // 3. Update State to trigger the UI shift
+  // Load missions from DB on mount
+  // Inside UserDashboard.jsx
+
+  // Modified: Load missions and draft on mount
+  // Inside UserDashboard.jsx
+  useEffect(() => {
+    const fetchUserMissions = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://127.0.0.1:5000/api/letters/my-missions', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+
+        // 1. Start with API data
+        let allMissions = result.success ? result.data : [];
+
+        // 2. Check for the local draft[cite: 11]
+        const savedDraft = localStorage.getItem('active_draft');
+        if (savedDraft) {
+          const parsedDraft = JSON.parse(savedDraft);
+
+          // 3. MERGE LOGIC: Remove any existing version of this draft from the array first
+          // then add the freshest version from localStorage at the top[cite: 11]
+          allMissions = [
+            parsedDraft,
+            ...allMissions.filter(m => m._id !== parsedDraft._id && !m._isLocalDraft)
+          ];
+        }
+
+        setLetters(allMissions);
+      } catch (err) {
+        console.error("Failed to load missions:", err);
+      }
+    };
+
+    fetchUserMissions();
+  }, []); // Runs once on mount
+  // Modified: Auto-save watcher[cite: 6, 11]
+  useEffect(() => {
+    if (view === 'editor' && config.sections?.length > 0) {
+      const draftToSave = { ...config, _isLocalDraft: true };
+      localStorage.setItem('active_draft', JSON.stringify(draftToSave));
+
+      // Update letters state immediately so the table reflects the changes live
+      setLetters(prev => {
+        const filtered = prev.filter(l => !l._isLocalDraft);
+        return [draftToSave, ...filtered];
+      });
+    }
+  }, [config, view]);
+  const handleCreateDraft = (data) => {
+    const newDraft = {
+      ...data,
+      sections: [
+        {
+          id: Date.now(),
+          sectionName: "Intro",
+          sectionType: "hero-reveal",
+          background: "bg-slate-900", // Give it a default color instead of transparent
+          canvas: { // Always include this to satisfy VisualCanvas[cite: 16, 17]
+            hasObject: false,
+            objects: 'None',
+            objectCount: 30
+          },
+          content: {
+            message: "It's Been 1 Month.",
+            fontStyle: "font-serif",
+            textColor: "#ffffff"
+          }
+        }
+      ]
+    };
     setConfig(newDraft);
-    setView('create');
-    setIsModalOpen(false);
+    setView('editor');
   };
 
   const handleFinalizeAndPush = async () => {
+    if (!config.title) return alert("Please name your mission!");
     try {
       const token = localStorage.getItem('token');
       const slug = config.title.toLowerCase().replace(/ /g, '-') + '-' + Date.now();
@@ -69,133 +146,23 @@ const handleCreateDraft = (data) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ ...config, slug })
+        body: JSON.stringify({ ...config, slug, _isLocalDraft: false }) // Remove draft flag
       });
-      if (!config.title) {
-        alert("Please name your mission before deploying!");
-        return;
-      }
 
       const result = await response.json();
       if (result.success) {
-        // 1. Add the new letter to your local state list
-        setLetters(prev => [result.data, ...prev]);
-
-        // 2. Clear the local storage draft
-        localStorage.removeItem('active_draft');
-
-        // 3. Reset the view and config to 'empty'
+        localStorage.removeItem('active_draft'); // Clear the auto-save
+        setLetters(prev => [result.data, ...prev.filter(l => !l._isLocalDraft)]);
         setView('list');
-        setConfig({ /* reset to initial state */ });
-
-        console.log("Mission Deployed! Redirecting to Dashboard...");
       }
     } catch (err) {
       console.error("Deployment failed:", err);
     }
   };
-
-  useEffect(() => {
-    const fetchUserMissions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        // Update this endpoint to only fetch letters belonging to the logged-in user[cite: 2]
-        const response = await fetch('http://127.0.0.1:5000/api/letters/my-missions', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const result = await response.json();
-        if (result.success) {
-          setLetters(result.data); // This populates the list from the DB
-        }
-      } catch (err) {
-        console.error("Failed to load missions:", err);
-      }
-    };
-
-    fetchUserMissions();
-  }, []); // Empty dependency array means this runs once on mount/refresh
-
-  const handleEditMission = (letterData) => {
-    // 1. Set the editor configuration to the selected letter's data
-    setConfig({
-      ...letterData,
-      // Ensure nested objects are preserved
-      canvas: letterData.canvas,
-      text: letterData.text
-    });
-
-    // 2. Switch to 'create' view (The Architect Workspace)
-    setView('create');
-  };
-
-  // State aligned with lettersSchema.js
-  const [config, setConfig] = useState({
-    title: '',
-    recipient: '',
-    message: '',
-    relation: 'Friend',
-    text: {
-      fontStyle: 'serif',
-      textColor: '#ffffff',
-      textSize: 18,
-      textType: 'Paragraph'
-    },
-    canvas: {
-      background: '#1A1828',
-      hasObject: false,
-      objects: 'None',
-      objectCount: 20,
-      objectSize: 10,
-      objectsMotion: 'Bounce',
-      isFullScreen: true
-    }
-  });
-
-  useEffect(() => {
-    // Only auto-save if we are in 'create' mode and have a letter ID
-    if (view === 'create' && config._id) {
-      const delayDebounceFn = setTimeout(() => {
-        saveDraftToDB();
-      }, 1500); // Wait 1.5 seconds after the last change
-
-      return () => clearTimeout(delayDebounceFn);
-    }
-  }, [config]);
-
-  const saveDraftToDB = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://127.0.0.1:5000/api/letters/${config._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(config) // Sends the entire config aligned with your Schema
-      });
-      console.log("Draft Synced to Cloud");
-    } catch (err) {
-      console.warn("Auto-save failed:", err);
-    }
-  };
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
-  const handleEditExisting = (letter) => {
-    // Populate the editor with existing letter data[cite: 4]
-    setConfig({
-      ...letter,
-      _id: letter._id, // Critical for the PUT auto-save logic[cite: 4]
-    });
-    setView('create');
-  };
-  // Inside UserDashboard.jsx
   return (
-    <div className="flex h-screen bg-[#0B0914] text-white overflow-hidden">
+    <div className="flex h-screen bg-[#0B0914] text-white overflow-hidden font-sans">
 
-      {/* REFACTORED SIDEBAR */}
+      {/* 1. SIDEBAR INTEGRATION */}
       <Sidebar
         view={view}
         setView={setView}
@@ -207,22 +174,57 @@ const handleCreateDraft = (data) => {
         handleFinalizeAndPush={handleFinalizeAndPush}
       />
 
-      <main className="flex-1 bg-[#050505] relative flex flex-col overflow-hidden">
-        <AnimatePresence mode="wait">
-          {view === 'list' ? (
-            <motion.div key="dashboard-tabs" className="h-full overflow-y-auto">
-              {currentTab === 'missions' && <MissionsTable letters={letters} onEdit={handleEditMission} />}
-              {currentTab === 'explore' && <ExplorePanel />}
-              {currentTab === 'people' && <PeoplePanel letters={letters} />}
-            </motion.div>
-          ) : (
-            <motion.div key="architect-workspace" className="flex-1 flex flex-col h-full">
-              {/* Architect Workspace Preview Logic ... */}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* 2. MAIN VIEWPORT */}
+      {/* Restored Main Viewport Logic */}
+      <main className="flex-1 overflow-y-auto bg-black">
+        {view === 'editor' ? (
+          /* 1. THE ARCHITECT EDITOR (The New Section System) */
+          <div className="h-full snap-y snap-mandatory overflow-y-auto">
+            {config.sections && config.sections.length > 0 ? (
+              config.sections.map((section) => (
+                <section
+                  key={section.id}
+                  className={`h-screen w-full flex items-center justify-center snap-start relative ${section.background}`}
+                >
+                  {/* VisualCanvas needs to be per-section now[cite: 19] */}
+                  {section.canvas?.hasObject && <VisualCanvas config={section} />}
+
+                  <motion.div
+                    className={`${section.content.fontStyle} text-center z-10`}
+                    style={{ color: section.content.textColor }}
+                  >
+                    <h1 className="text-5xl font-black">{section.content.message}</h1>
+                  </motion.div>
+                </section>
+              ))
+            ) : (
+              <div className="h-full flex items-center justify-center text-white/20">
+                Terminal Empty. Add a scene to begin.
+              </div>
+            )}
+          </div>
+        ) : (
+          /* 2. THE DASHBOARD PANELS (Restoring your missing views[cite: 15, 17, 18]) */
+          <div className="h-full">
+            {currentTab === 'missions' && (
+              <MissionsTable
+                letters={letters}
+                onEdit={(mission) => { setConfig(mission); setView('editor'); }}
+              />
+            )}
+
+            {currentTab === 'people' && (
+              <PeoplePanel letters={letters} />
+            )}
+
+            {currentTab === 'explore' && (
+              <ExplorePanel />
+            )}
+          </div>
+        )}
       </main>
 
+      {/* 4. MODAL INTEGRATION */}
       <NewLetterModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
