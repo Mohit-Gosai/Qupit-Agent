@@ -1,65 +1,58 @@
 const mongoose = require('mongoose');
 
-// Schema that handles letters data
 const letterSchema = new mongoose.Schema(
     {
-        // Reference to the user who created the letter
-        authorId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
+        authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         title: { type: String, required: true },
-        slug: { type: String, unique: true, required: true }, 
-        message: { type: String,  },
+        slug: { type: String, unique: true, required: true },
         writtenAt: { type: Date, default: Date.now },
         isPrivate: { type: Boolean, default: true },
-        sender: { type: String, default: "user" },
         recipient: { type: String, required: true },
-        
         relation: {
-            type: String, 
-            default: "Friend", 
+            type: String,
+            default: "Friend",
             enum: ["Couple", "Parent-Children", "Neighbor", "Boss-Employee", "Colleague", "Friend"]
         },
 
-        text: {
-            fontStyle: { type: String, default: "Lucida Grande" },
-            textColor: { type: String, default: "#000000" },
-            textSize: { type: Number, default: 16 },
-            textType: {
+        // REFACTORED: The "Story" Array
+        // This allows you to have Section 1 (Hero) -> Section 2 (Shayari) -> Section 3 (Media Grid)
+        sections: [{
+            sectionName: { type: String },
+            sectionType: { 
                 type: String, 
-                default: "Heading", 
-                enum: ["Heading", "Paragraph"]
+                enum: ["single-column", "two-columns", "custom-grid", "hero-reveal"],
+                default: "single-column" 
+            },
+            background: { type: String, default: "transparent" },
+            
+            // Content nested inside each section
+            content: {
+                message: { type: String },
+                fontStyle: { type: String, default: "Lucida Grande" },
+                textColor: { type: String, default: "#000000" },
+                textSize: { type: Number, default: 16 },
+                media: {
+                    image: { type: String },
+                    video: { type: String },
+                    audio: { type: String }
+                }
+            },
+
+            // Visual effects for this specific section
+            canvasConfig: {
+                objects: { type: String, enum: ["Circle", "Star", "Heart", "Blob", "None"], default: "None" },
+                motion: { type: String, enum: ["Bounce", "Wave", "Fade-In-Out", "Pulse"], default: "Fade-In-Out" },
+                objectCount: { type: Number, default: 10 }
             }
-        },
+        }],
 
-        canvas: {
-            background: { type: String, default: "#ffffff" },
-            hasObject: { type: Boolean, default: false },
-            objects: {
-                type: String, 
-                default: "None", 
-                enum: ["Circle", "Star", "Heart", "Blob", "None"]
-            },
-            objectCount: { type: Number, default: 1, min: 1, max: 100 },
-            objectSize: { type: Number, default: 20 },
-            objectsMotion: {
-                type: String, 
-                default: "Bounce", 
-                enum: ["Bounce", "Wave", "Unbounce", "Fade-In-Out", "Pulse"]
-            },
-            isFullScreen: { type: Boolean, default: true }
-        },
-
-        media: {
-            image: { type: String, default: null },
-            audio: { type: String, default: null },
-            video: { type: String, default: null }
+        // Global Canvas Settings (Floating objects that follow the whole scroll)
+        globalCanvas: {
+            hasGlobalObjects: { type: Boolean, default: false },
+            globalBackground: { type: String, default: "#ffffff" }
         }
     },
-    { timestamps: true } // Automatically adds createdAt and updatedAt fields
+    { timestamps: true }
 );
 
-// Exporting as a Model for professional use
 module.exports = letterSchema;

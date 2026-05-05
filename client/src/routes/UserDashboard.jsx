@@ -27,16 +27,27 @@ const UserDashboard = () => {
 
   // inside UserDashboard.jsx
 
-  const handleCreateDraft = (modalData) => {
     // 1. Create the temporary draft object
-    const newDraft = {
-      ...modalData,
-      _isLocalDraft: true, // Internal flag to know it's not in DB yet
-      id: `draft-${Date.now()}`,
-      message: "",
-      canvas: config.canvas,
-      text: config.text
-    };
+    // Inside your onCreate handler
+const handleCreateDraft = (data) => {
+  const newDraft = {
+    ...data,
+    _isLocalDraft: true,
+    sections: [
+      {
+        id: Date.now(),
+        sectionName: "Introduction",
+        sectionType: "hero-reveal",
+        content: {
+          message: "It's Been 1 Month.",
+          subContent: "Scroll to explore"
+        }
+      }
+    ]
+  };
+  setConfig(newDraft);
+  setView('editor');
+
 
     // 2. Save to Local Storage
     localStorage.setItem('active_draft', JSON.stringify(newDraft));

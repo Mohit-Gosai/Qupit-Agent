@@ -74,8 +74,7 @@ export const Sidebar = ({
                                 <p className="text-[10px] text-[#FFB7C5] uppercase tracking-widest mb-2">Draft Status: Local</p>
                                 <button
                                     onClick={handleFinalizeAndPush}
-                                    disabled={config.message.length < 50}
-                                    className={`w-full py-3 rounded-xl font-bold transition-all ${config.message.length >= 50 ? 'bg-[#FFB7C5] text-[#14111E]' : 'bg-white/5 text-white/20'}`}
+                                    className={`w-full py-3 rounded-xl font-bold transition-all`}
                                 >
                                     Push to Cloud
                                 </button>
