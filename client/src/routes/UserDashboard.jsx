@@ -7,8 +7,9 @@ import { VisualCanvas } from '../components/VisualCanvas';
 import { NewLetterModal } from '../components/Modals/NewLetterModal';
 import { ExplorePanel } from '../components/ExplorePanel';
 import { MissionsTable } from '../components/MissionsTable';
-import { Sidebar } from '../components/Sidebar';
+import  Sidebar  from '../components/Sidebar';
 import PeoplePanel from '../components/PeoplePanel';
+import { ArchitectPreview } from '../components/ArchitectPreview'; //
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -120,7 +121,8 @@ const UserDashboard = () => {
           canvas: { // Always include this to satisfy VisualCanvas[cite: 16, 17]
             hasObject: false,
             objects: 'None',
-            objectCount: 30
+            objectCount: 30,
+            motion: 'Float'
           },
           content: {
             message: "It's Been 1 Month.",
@@ -133,6 +135,8 @@ const UserDashboard = () => {
     setConfig(newDraft);
     setView('editor');
   };
+
+  // Add a completely new scene
 
   const handleFinalizeAndPush = async () => {
     if (!config.title) return alert("Please name your mission!");
@@ -177,52 +181,47 @@ const UserDashboard = () => {
       {/* 2. MAIN VIEWPORT */}
       {/* Restored Main Viewport Logic */}
       <main className="flex-1 overflow-y-auto bg-black">
-        {view === 'editor' ? (
-          /* 1. THE ARCHITECT EDITOR (The New Section System) */
-          <div className="h-full snap-y snap-mandatory overflow-y-auto">
-            {config.sections && config.sections.length > 0 ? (
-              config.sections.map((section) => (
-                <section
-                  key={section.id}
-                  className={`h-screen w-full flex items-center justify-center snap-start relative ${section.background}`}
-                >
-                  {/* VisualCanvas needs to be per-section now[cite: 19] */}
-                  {section.canvas?.hasObject && <VisualCanvas config={section} />}
-
-                  <motion.div
-                    className={`${section.content.fontStyle} text-center z-10`}
-                    style={{ color: section.content.textColor }}
-                  >
-                    <h1 className="text-5xl font-black">{section.content.message}</h1>
-                  </motion.div>
-                </section>
-              ))
-            ) : (
-              <div className="h-full flex items-center justify-center text-white/20">
-                Terminal Empty. Add a scene to begin.
-              </div>
-            )}
-          </div>
-        ) : (
-          /* 2. THE DASHBOARD PANELS (Restoring your missing views[cite: 15, 17, 18]) */
-          <div className="h-full">
-            {currentTab === 'missions' && (
-              <MissionsTable
-                letters={letters}
-                onEdit={(mission) => { setConfig(mission); setView('editor'); }}
-              />
-            )}
-
-            {currentTab === 'people' && (
-              <PeoplePanel letters={letters} />
-            )}
-
-            {currentTab === 'explore' && (
-              <ExplorePanel />
-            )}
-          </div>
+  <AnimatePresence mode="wait">
+    {view === 'editor' ? (
+      /* 1. THE ARCHITECT EDITOR: Centralized Preview Component */
+      <motion.div 
+        key="editor"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="h-full"
+      >
+        <ArchitectPreview config={config} />
+      </motion.div>
+    ) : (
+      /* 2. THE DASHBOARD PANELS: Missions, People, and Explore */
+      <motion.div 
+        key="tabs"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="h-full"
+      >
+        {currentTab === 'missions' && (
+          <MissionsTable
+            letters={letters}
+            onEdit={(mission) => { 
+              setConfig(mission); 
+              setView('editor'); 
+            }}
+          />
         )}
-      </main>
+
+        {currentTab === 'people' && (
+          <PeoplePanel letters={letters} />
+        )}
+
+        {currentTab === 'explore' && (
+          <ExplorePanel />
+        )}
+      </motion.div>
+    )}
+  </AnimatePresence>
+</main>   
 
       {/* 4. MODAL INTEGRATION */}
       <NewLetterModal

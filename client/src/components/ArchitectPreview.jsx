@@ -1,25 +1,37 @@
 // src/components/ArchitectPreview.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+import { VisualCanvas } from './VisualCanvas';
+
 export const ArchitectPreview = ({ config }) => {
   return (
     <div className="h-full overflow-y-auto scroll-smooth snap-y snap-mandatory">
       {config.sections?.map((section) => (
-        // Inside ArchitectPreview.jsx[cite: 10]
-        // Inside ArchitectPreview.jsx[cite: 10]
-        // Inside your ArchitectPreview map loop[cite: 10]
-        // Inside ArchitectPreview.jsx
-        <section
-          className={`h-screen w-full flex items-center justify-center relative overflow-hidden ${section.background}`}
-        >
-          {/* Layer 1: The Visual Effects[cite: 16] */}
+       
+        <section className={`h-screen w-full relative overflow-hidden flex items-center justify-center ${section.background}`}>
           {section.canvas?.hasObject && <VisualCanvas section={section} />}
 
-          {/* Layer 2: The Typography[cite: 10] */}
-          <motion.h1
-            className={`${section.content.fontStyle} text-6xl font-black z-10 text-center px-10`}
-            style={{ color: section.content.textColor }}
-          >
-            {section.content.message}
-          </motion.h1>
+         
+          <div className={`w-full h-full p-10 z-10 grid gap-6 ${section.modules?.length === 2 ? 'grid-cols-2' :
+            section.modules?.length === 3 ? 'grid-cols-3' : 'grid-cols-1'
+            }`}>
+            {section.modules?.map((module, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.3 }}
+                className={`flex flex-col justify-center h-full p-6 ${module.align || 'text-center'}`}
+              >
+                <p
+                  className={`${module.font} ${module.size} ${module.align} leading-tight`}
+                  style={{ color: module.color || '#FFFFFF' }} 
+                >
+                  {module.text}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </section>
       ))}
     </div>
