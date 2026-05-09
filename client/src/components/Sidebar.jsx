@@ -7,6 +7,7 @@ import { BackgroundTool } from './EditorTools/BackgroundTool';
 import { TextTool } from './EditorTools/TextTool';
 import { CanvasObjectTool } from './EditorTools/CanvasObjectTool';
 import { ViewportTool } from './EditorTools/ViewPortTool';
+import { MediaTool } from './EditorTools/MediaTool';
 
 const Sidebar = ({
     view,
@@ -20,7 +21,7 @@ const Sidebar = ({
     screenSize,
     setScreenSize
 }) => {
-    const [sidebarWidth, setSidebarWidth] = useState(320); 
+    const [sidebarWidth, setSidebarWidth] = useState(320);
     const isResizing = useRef(false);
 
     // Resizing Logic
@@ -69,6 +70,18 @@ const Sidebar = ({
         setActiveSectionId(newScene.id);
     };
 
+    const updateModule = (sectionId, moduleIndex, updates) => {
+        const updatedSections = config.sections.map(s => {
+            if (s.id === sectionId) {
+                const newModules = [...s.modules];
+                newModules[moduleIndex] = { ...newModules[moduleIndex], ...updates };
+                return { ...s, modules: newModules };
+            }
+            return s;
+        });
+        setConfig({ ...config, sections: updatedSections });
+    };
+
     const addColumnToSection = (id) => {
         const updated = config.sections.map(s => {
             if (s.id === id) {
@@ -95,12 +108,12 @@ const Sidebar = ({
     };
 
     return (
-        <aside 
+        <aside
             style={{ width: `${sidebarWidth}px` }}
             className="relative border-r border-white/5 bg-[#14111E] flex flex-col z-30 h-screen transition-[width] duration-75 ease-out"
         >
             {/* 1. THE RESIZE HANDLE */}
-            <div 
+            <div
                 onMouseDown={startResizing}
                 className="absolute right-[-2px] top-0 h-full w-[4px] cursor-col-resize z-50 group"
             >
@@ -168,19 +181,50 @@ const Sidebar = ({
                                             </div>
                                         </div>
 
+                                        {/* Replace the AnimatePresence block in Sidebar.jsx with this */}
+                                        {/* Cleaned up tool section in Sidebar.jsx */}
+                                        {/* Inside Sidebar.jsx sections.map loop */}
                                         <AnimatePresence>
                                             {activeSectionId === section.id && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    className="overflow-hidden"
-                                                >
-                                                    <div className="space-y-6 p-4 mt-2 bg-black/20 rounded-xl border border-white/5">
-                                                        <BackgroundTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
-                                                        <TextTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
-                                                        <CanvasObjectTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
-                                                    </div>
+                                                <motion.div className="space-y-6 p-4 mt-2 bg-black/20 rounded-xl border border-white/5">
+
+                                                    <BackgroundTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
+
+                                                    {/* 1. Loop through each module inside the active section */}
+                                                    {section.modules?.map((module, mIdx) => (
+                                                        <div key={module.id} className="pt-4 border-t border-white/5 space-y-4">
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                                                                    Module {mIdx + 1}
+                                                                </span>
+
+                                                                {/* The Switcher */}
+                                                                <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
+                                                                    <button
+                                                                        onClick={() => updateModule(section.id, mIdx, { contentType: 'text' })}
+                                                                        className={`px-2 py-1 rounded text-[9px] font-bold ${module.contentType !== 'media' ? 'bg-[#FFB7C5] text-black' : 'text-white/40'}`}
+                                                                    >
+                                                                        TEXT
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => updateModule(section.id, mIdx, { contentType: 'media' })}
+                                                                        className={`px-2 py-1 rounded text-[9px] font-bold ${module.contentType === 'media' ? 'bg-[#FFB7C5] text-black' : 'text-white/40'}`}
+                                                                    >
+                                                                        MEDIA
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* 2. Intelligent Rendering */}
+                                                            {module.contentType === 'media' ? (
+                                                                <MediaTool module={module} onUpdate={(updates) => updateModule(section.id, mIdx, updates)} />
+                                                            ) : (
+                                                                <TextTool module={module} onUpdate={(updates) => updateModule(section.id, mIdx, updates)} />
+                                                            )}
+                                                        </div>
+                                                    ))}
+
+                                                    <CanvasObjectTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
