@@ -6,9 +6,8 @@ const cors = require('cors');
 const router = require('./router/userRouter');
 
 const app = express();
-const { PORT, DATABASE } = process.env;
 
-mongoose.connect(DATABASE)
+mongoose.connect(process.env.DATABASE)
     .then(() => console.log("✅ Database connected successfully"))
     .catch(err => console.log("❌ Connection Error: ", err));
 
@@ -26,4 +25,4 @@ app.use('/api/letters', require('./router/letterRoutes')); // Ensure letter rout
 
 app.get('/', (req, res) => res.send("Server is live!"));
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(process.env.PORT, () => console.log(`🚀 Server running on port ${process.env.PORT}`));

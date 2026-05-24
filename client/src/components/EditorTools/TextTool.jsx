@@ -24,7 +24,7 @@ export const TextTool = ({ section, onUpdate }) => {
 
   return (
     <div className="space-y-8">
-      {section.modules?.map((module, i) => (
+      {section?.modules?.map((module, i) => (
         <div key={i} className="p-4 bg-black/40 rounded-2xl border border-white/5 space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-[10px] font-black text-[#FFB7C5] uppercase tracking-widest">
@@ -92,6 +92,14 @@ export const TextTool = ({ section, onUpdate }) => {
                 </button>
               ))}
             </div>
+            {!section?.modules && (
+              <button
+                onClick={() => onUpdate({ modules: [{ id: 1, text: "New Text", contentType: 'text' }] })}
+                className="text-xs text-[#FFB7C5] bg-white/5 p-2 rounded-lg"
+              >
+                Repair Section Structure
+              </button>
+            )}
           </div>
         </div>
       ))}

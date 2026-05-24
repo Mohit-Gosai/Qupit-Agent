@@ -7,7 +7,7 @@ import { VisualCanvas } from '../components/VisualCanvas';
 import { NewLetterModal } from '../components/Modals/NewLetterModal';
 import { ExplorePanel } from '../components/ExplorePanel';
 import { MissionsTable } from '../components/MissionsTable';
-import  Sidebar  from '../components/Sidebar';
+import Sidebar from '../components/Sidebar';
 import PeoplePanel from '../components/PeoplePanel';
 import { ArchitectPreview } from '../components/ArchitectPreview'; //
 
@@ -109,6 +109,8 @@ const UserDashboard = () => {
       });
     }
   }, [config, view]);
+
+  // Inside UserDashboard.jsx
   const handleCreateDraft = (data) => {
     const newDraft = {
       ...data,
@@ -116,18 +118,25 @@ const UserDashboard = () => {
         {
           id: Date.now(),
           sectionName: "Intro",
-          sectionType: "hero-reveal",
-          background: "bg-slate-900", // Give it a default color instead of transparent
-          canvas: { // Always include this to satisfy VisualCanvas[cite: 16, 17]
+          background: "bg-slate-900",
+          // UPGRADED: Always initialize with the modules array
+          modules: [
+            {
+              id: 1,
+              contentType: 'text',
+              text: "It's Been 1 Month.",
+              font: "font-serif",
+              size: "text-5xl",
+              color: "#ffffff",
+              align: "text-center",
+              mediaUrl: "",
+              mediaType: "image"
+            }
+          ],
+          canvas: {
             hasObject: false,
             objects: 'None',
-            objectCount: 30,
             motion: 'Float'
-          },
-          content: {
-            message: "It's Been 1 Month.",
-            fontStyle: "font-serif",
-            textColor: "#ffffff"
           }
         }
       ]
@@ -178,50 +187,83 @@ const UserDashboard = () => {
         handleFinalizeAndPush={handleFinalizeAndPush}
       />
 
-      {/* 2. MAIN VIEWPORT */}
-      {/* Restored Main Viewport Logic */}
-      <main className="flex-1 overflow-y-auto bg-black">
-  <AnimatePresence mode="wait">
-    {view === 'editor' ? (
-      /* 1. THE ARCHITECT EDITOR: Centralized Preview Component */
-      <motion.div 
-        key="editor"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="h-full"
-      >
-        <ArchitectPreview config={config} />
-      </motion.div>
-    ) : (
-      /* 2. THE DASHBOARD PANELS: Missions, People, and Explore */
-      <motion.div 
-        key="tabs"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="h-full"
-      >
-        {currentTab === 'missions' && (
-          <MissionsTable
-            letters={letters}
-            onEdit={(mission) => { 
-              setConfig(mission); 
-              setView('editor'); 
-            }}
-          />
-        )}
+      <main className="flex-1 overflow-y-auto bg-black scrollbar-hide">
+        {view === 'editor' ? (
+          <div className="h-full snap-y snap-mandatory overflow-y-auto">
+            {config.sections?.map((section) => (
+              <section
+                key={section.id}
+                className={`h-screen w-full flex items-center justify-center snap-start relative ${section.background}`}
+              >
+                {section.canvas?.hasObject && <VisualCanvas config={section} />}
 
-        {currentTab === 'people' && (
-          <PeoplePanel letters={letters} />
-        )}
+                {/* NEW GRID RENDERER */}
+                {/* Replace the motion.div inside the editor view in UserDashboard.jsx */}
+                <div className={`w-full h-full p-10 z-10 grid gap-6 ${section.modules?.length === 2 ? 'grid-cols-2' :
+                    section.modules?.length === 3 ? 'grid-cols-3' : 'grid-cols-1'
+                  }`}>
+                  {section.modules?.map((module, i) => (
+                    <motion.div
+                      key={i}
+                      className={`relative flex flex-col items-center justify-center p-6 rounded-3xl border border-white/5 backdrop-blur-sm bg-black/10 overflow-hidden`}
+                    >
+                      {module.contentType === 'media' ? (
+                        <div className="w-full h-full flex items-center justify-center">
+                          {module.mediaType === 'video' ? (
+                            <video src={module.mediaUrl} autoPlay loop muted className="w-full h-full object-cover rounded-2xl" />
+                          ) : (
+                            <img src={module.mediaUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
+                          )}
+                          {module.mediaCaption && (
+                            <div className="absolute bottom-4 p-2 bg-black/60 rounded-lg text-xs">
+                              {module.mediaCaption}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className={`flex flex-col justify-center h-full w-full ${module.align || 'text-center'}`}>
+                          <h1
+                            className={`${module.font || 'font-sans'} ${module.size || 'text-xl'} leading-tight`}
+                            style={{ color: module.color || '#FFFFFF' }}
+                          >
+                            {module.text}
+                          </h1>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
+          /* ... existing dashboard tabs (missions, people, explore) */
+          <motion.div
+            key="tabs"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="h-full"
+          >
+            {currentTab === 'missions' && (
+              <MissionsTable
+                letters={letters}
+                onEdit={(mission) => {
+                  setConfig(mission);
+                  setView('editor');
+                }}
+              />
+            )}
 
-        {currentTab === 'explore' && (
-          <ExplorePanel />
+            {currentTab === 'people' && (
+              <PeoplePanel letters={letters} />
+            )}
+
+            {currentTab === 'explore' && (
+              <ExplorePanel />
+            )}
+          </motion.div>
         )}
-      </motion.div>
-    )}
-  </AnimatePresence>
-</main>   
+      </main>
 
       {/* 4. MODAL INTEGRATION */}
       <NewLetterModal

@@ -7,6 +7,7 @@ import { BackgroundTool } from './EditorTools/BackgroundTool';
 import { TextTool } from './EditorTools/TextTool';
 import { CanvasObjectTool } from './EditorTools/CanvasObjectTool';
 import { ViewportTool } from './EditorTools/ViewPortTool';
+import { MediaTool } from './EditorTools/MediaTool';
 
 const Sidebar = ({
     view,
@@ -20,7 +21,7 @@ const Sidebar = ({
     screenSize,
     setScreenSize
 }) => {
-    const [sidebarWidth, setSidebarWidth] = useState(320); 
+    const [sidebarWidth, setSidebarWidth] = useState(320);
     const isResizing = useRef(false);
 
     // Resizing Logic
@@ -74,11 +75,16 @@ const Sidebar = ({
             if (s.id === id) {
                 const currentCols = s.modules?.length || 1;
                 if (currentCols >= 3) return { ...s, modules: [s.modules[0]] };
+                // New Module blueprint:
                 const newModule = {
                     id: currentCols + 1,
+                    contentType: 'text', // 'text' or 'media'
                     text: `Module ${currentCols + 1}`,
                     font: "font-sans",
-                    size: "text-2xl"
+                    size: "text-2xl",
+                    mediaUrl: "",
+                    mediaType: "image", // "image", "video", or "audio"
+                    mediaCaption: ""
                 };
                 return { ...s, modules: [...s.modules, newModule] };
             }
@@ -95,12 +101,12 @@ const Sidebar = ({
     };
 
     return (
-        <aside 
+        <aside
             style={{ width: `${sidebarWidth}px` }}
             className="relative border-r border-white/5 bg-[#14111E] flex flex-col z-30 h-screen transition-[width] duration-75 ease-out"
         >
             {/* 1. THE RESIZE HANDLE */}
-            <div 
+            <div
                 onMouseDown={startResizing}
                 className="absolute right-[-2px] top-0 h-full w-[4px] cursor-col-resize z-50 group"
             >
@@ -176,9 +182,15 @@ const Sidebar = ({
                                                     exit={{ height: 0, opacity: 0 }}
                                                     className="overflow-hidden"
                                                 >
+
+                                                    <TextTool />:
                                                     <div className="space-y-6 p-4 mt-2 bg-black/20 rounded-xl border border-white/5">
                                                         <BackgroundTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                         <TextTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
+
+                                                        {/* Add the Media Tool to the configuration stack */}
+                                                        <MediaTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
+
                                                         <CanvasObjectTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                     </div>
                                                 </motion.div>
