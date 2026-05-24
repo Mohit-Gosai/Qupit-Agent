@@ -70,6 +70,18 @@ const Sidebar = ({
         setActiveSectionId(newScene.id);
     };
 
+    const updateModule = (sectionId, moduleIndex, updates) => {
+        const updatedSections = config.sections.map(s => {
+            if (s.id === sectionId) {
+                const newModules = [...s.modules];
+                newModules[moduleIndex] = { ...newModules[moduleIndex], ...updates };
+                return { ...s, modules: newModules };
+            }
+            return s;
+        });
+        setConfig({ ...config, sections: updatedSections });
+    };
+
     const addColumnToSection = (id) => {
         const updated = config.sections.map(s => {
             if (s.id === id) {
@@ -174,6 +186,9 @@ const Sidebar = ({
                                             </div>
                                         </div>
 
+                                        {/* Replace the AnimatePresence block in Sidebar.jsx with this */}
+                                        {/* Cleaned up tool section in Sidebar.jsx */}
+                                        {/* Inside Sidebar.jsx sections.map loop */}
                                         <AnimatePresence>
                                             {activeSectionId === section.id && (
                                                 <motion.div
