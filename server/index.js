@@ -5,9 +5,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const router = require('./router/userRouter');
 const uploadRoutes = require('./router/upload');
-app.use(uploadRoutes);
-
 const app = express();
+
 
 mongoose.connect(process.env.DATABASE)
     .then(() => console.log("✅ Database connected successfully"))
@@ -22,6 +21,7 @@ app.use(cors({
 app.use(express.json()); 
 
 app.use('/api', router); // Now the router has access to CORS and JSON parsing
+app.use('/api', uploadRoutes); // Mount upload routes under /api (upload route defines /upload)
 app.use('/api/letters', require('./router/letterRoutes')); // Ensure letter routes are also registered
 // -------------------------------------------------------
 

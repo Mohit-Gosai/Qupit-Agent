@@ -17,7 +17,7 @@ const upload = multer({ storage });
 // 3. Your Authentication Middleware (Ensure it matches your current project setup)
 // const { protect } = require('../middleware/authMiddleware'); 
 
-router.post('/api/upload', upload.single('media'), async (req, res) => {
+router.post('/upload', upload.single('media'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });

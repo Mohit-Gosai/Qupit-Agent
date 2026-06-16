@@ -39,10 +39,12 @@ const userSignIn = async (req, res) => {
         // 3. Generate Token
         const token = signToken(newUser._id);
 
+        const userObj = newUser.toObject();
+        delete userObj.password;
         res.status(201).json({
             success: true,
             token,
-            data: { user: newUser }
+            data: { user: userObj }
         });
     } catch (error) {
         res.status(400).json({ status: "fail", message: error.message });
