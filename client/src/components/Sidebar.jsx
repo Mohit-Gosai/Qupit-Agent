@@ -197,15 +197,10 @@ const Sidebar = ({
                                                     exit={{ height: 0, opacity: 0 }}
                                                     className="overflow-hidden"
                                                 >
-
-                                                    <TextTool />:
                                                     <div className="space-y-6 p-4 mt-2 bg-black/20 rounded-xl border border-white/5">
                                                         <BackgroundTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                         <TextTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
-
-                                                        {/* Add the Media Tool to the configuration stack */}
                                                         <MediaTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
-
                                                         <CanvasObjectTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                     </div>
                                                 </motion.div>

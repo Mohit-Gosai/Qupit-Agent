@@ -5,11 +5,13 @@ const userModal = require('../config/userConfig');
 const protect = async (req, res, next) => {
     try {
         let token;
-        // 1. Check if token exists in headers
+        
+        // Safe Check: Verify authorization header exists and starts with Bearer
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }
 
+        // If no token was extracted, exit cleanly without breaking
         if (!token) {
             return res.status(401).json({ 
                 success: false, 
@@ -29,13 +31,16 @@ const protect = async (req, res, next) => {
             });
         }
 
-        // 4. GRANT ACCESS to protected route
-        // We attach the user to the request object so the next function can use it
+        // 4. GRANT ACCESS
         req.user = currentUser;
         next();
     } catch (error) {
-        res.status(401).json({ success: false, message: "Invalid token. Please log in again." });
+        console.error("Auth Middleware Error:", error.message);
+        return res.status(401).json({ 
+            success: false, 
+            message: "Invalid token. Please log in again." 
+        });
     }
 };
 
-module.exports = { protect };
+module.exports = protect;

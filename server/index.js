@@ -4,6 +4,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const router = require('./router/userRouter');
+const uploadRoutes = require('./router/upload');
+app.use(uploadRoutes);
 
 const app = express();
 

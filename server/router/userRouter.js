@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { userSignIn, login, allUsers } = require('../controllers/userControler');
-const { protect } = require('../middleware/authMiddleware'); // Import the guard
+const  protect  = require('../middleware/authMiddleware'); // Import the guard
 const { createLetter, getPublicLitters, updateLetter, getMyLetters } = require('../controllers/letterControler'); // Import letter controller for protected route
 
 
