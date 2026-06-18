@@ -2,6 +2,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { VisualCanvas } from './VisualCanvas';
+import { Carousel } from './Carousel';
+import { Card } from './Card';
+import { Accordion } from './Accordion';
 
 export const ArchitectPreview = ({ config }) => {
   return (
@@ -77,6 +80,31 @@ export const ArchitectPreview = ({ config }) => {
                       </div>
                     )}
 
+                  </div>
+                ) : module.contentType === 'component' ? (
+                  // --- COMPONENT PRESENTATION MODULE ---
+                  <div className="w-full h-full flex items-center justify-center">
+                    {module.componentType === 'carousel' && (
+                      <Carousel items={module.props?.items || []} style={module.style || {}} />
+                    )}
+
+                    {module.componentType === 'card' && (
+                      <Card
+                        title={module.props?.title || 'Card Title'}
+                        body={module.props?.body || 'Card body text.'}
+                        image={module.props?.image}
+                        style={module.style || {}}
+                      />
+                    )}
+
+                    {module.componentType === 'accordion' && (
+                      <Accordion items={module.props?.items || []} style={module.style || {}} />
+                    )}
+
+                    {/* Fallback when no component type matched */}
+                    {!module.componentType && (
+                      <div className="text-white/40">No component selected</div>
+                    )}
                   </div>
                 ) : (
                   // --- STANDARD TEXT PRESENTATION MODULE ---
