@@ -8,6 +8,7 @@ import { TextTool } from './EditorTools/TextTool';
 import { CanvasObjectTool } from './EditorTools/CanvasObjectTool';
 import { ViewportTool } from './EditorTools/ViewPortTool';
 import { MediaTool } from './EditorTools/MediaTool';
+import { ComponentsTool } from './EditorTools/ComponentsTool';
 
 const Sidebar = ({
     view,
@@ -201,7 +202,8 @@ const Sidebar = ({
                                                         <BackgroundTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                         <TextTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                         <MediaTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
-                                                        <CanvasObjectTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
+                                                                                                                <ComponentsTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
+                                                                                                                <CanvasObjectTool section={section} onUpdate={(updates) => updateSection(section.id, updates)} />
                                                     </div>
                                                 </motion.div>
                                             )}
