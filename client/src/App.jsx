@@ -1,69 +1,35 @@
-import React, { useState, useEffect } from 'react'
-import Navbar from './components/Navbar'
-import { Outlet, useLocation } from 'react-router-dom' // Add useLocation
+// src/App.jsx
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import MainNavbar from './components/common/MainNavbar';
+import LeftSidebar from './components/common/LeftSidebar';
+import RightSidebar from './components/common/RightSidebar';
+import CreateFAB from './components/common/CreateFAB'; // ◄ Import the floating menu here
 
 export default function App() {
-  const [isLogin, setIsLogin] = useState(true);
-
-
-  const checkAuth = async () => {
-
-    const token = localStorage.getItem('token');
-  
-    const response = await fetch('http://127.0.0.1:5000/api/userdata', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // This is what the Guard looks for
-      }
-    });
-  }
-
-  const location = useLocation(); // Get current URL path
-
-  useEffect(() => {
-    const verifySession = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setIsLogin(false);
-        return;
-      }
-      try {
-        const response = await fetch('http://127.0.0.1:5000/api/userdata', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const result = await response.json();
-        if (result.success) {
-          setIsLogin(true);
-        } else {
-          localStorage.removeItem('token');
-          setIsLogin(false);
-        }
-      } catch (err) {
-        setIsLogin(false);
-      }
-    };
-    verifySession();
-  }, []);
-
-  // Define which paths should NOT show the default Navbar
-  const hideNavbarPaths = ['/dashboard'];
-  const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
-  //  be8c7bd8fbb1fcaecb44520cc94fb04c3a9272e1
-
   return (
-    <div className="bg-[#14111E] min-h-screen">
-      {/* Logic: Only show Navbar if we are NOT on the dashboard */}
-      {!shouldHideNavbar && <Navbar />}
-      
-      <Outlet context={{ isLogin, setIsLogin }} />
+    <div className="min-h-screen bg-[#0D0B14] text-white flex flex-col font-sans relative">
+      {/* 1. Global Navigation Bar */}
+      <MainNavbar />
 
-      {/* Footer logic: You might want to hide the footer on the dashboard too */}
-      {!shouldHideNavbar && (
-        <footer className="py-10 border-t border-white/5 text-center text-white/20 text-xs tracking-widest uppercase">
-          © 2026 Qupit Agent • Built with Heart
-        </footer>
-      )}
+      {/* 2. Structured App Layout Grid */}
+      <div className="flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 px-4 py-6">
+        
+        {/* Left column navigation component */}
+        <LeftSidebar />
+
+        {/* Center column core content sub-routes */}
+        <main className="col-span-1 md:col-span-2 space-y-6">
+          <Outlet />
+        </main>
+
+        {/* Right column discovery content component */}
+        <RightSidebar />
+
+      </div>
+
+      {/* 3. Global Floating Interaction Deck */}
+      <CreateFAB /> {/* ◄ Persistent action layer floating across all page states */}
     </div>
-  )
+  );
 }

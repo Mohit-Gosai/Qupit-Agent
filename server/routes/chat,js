@@ -1,0 +1,29 @@
+// server/routes/chat.js
+const express = require('express');
+const router = express.Router();
+const Message = require('../models/Message');
+const User = require('../models/User');
+const { protect } = require('../middleware/authMiddleware'); // Your standard auth shield
+
+// GET /api/chat/users - Retrieve all active database profiles for contact lists
+router.get('/users', protect, async (req, res) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.user._id } }).select('username profile');
+    res.json(users);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// GET /api/chat/history/:recipientId - Retrieve historical dialogue context threads
+router.get('/history/:recipientId', protect, async (req, res) => {
+  try {
+    const history = await Message.find({
+      $or: [
+        { sender: req.user._id, recipient: req.params.recipientId },
+        { sender: req.params.recipientId, recipient: req.user._id }
+      ]
+    }).sort({ createdAt: 1 });
+    res.json(history);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+module.exports = router;

@@ -1,46 +1,40 @@
+// server/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const { promisify } = require('util');
-const userModal = require('../config/userConfig');
+const User = require('../models/User');
 
 const protect = async (req, res, next) => {
-    try {
-        let token;
-        
-        // Safe Check: Verify authorization header exists and starts with Bearer
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    let token;
+
+    // 1. Check if the token exists in the Authorization Header (Format: Bearer <token>)
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            // Extract the token string from the header array split
             token = req.headers.authorization.split(' ')[1];
+
+            // 2. Decode and verify the token using your secret key
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+            // 3. Fetch the user document from the database using the ID inside the token
+            // We use .select('-password') here to completely exclude the password hash from the request lifecycle
+            req.user = await User.findById(decoded.id).select('-password');
+
+            if (!req.user) {
+                return res.status(401).json({ success: false, message: "User session not found in system" });
+            }
+
+            // 4. Everything checks out perfectly! Move forward to the next function in line
+            next();
+
+        } catch (error) {
+            console.error(`❌ Middleware Token Verification Failure: ${error.message}`);
+            return res.status(401).json({ success: false, message: "Not authorized, token validation failed" });
         }
+    }
 
-        // If no token was extracted, exit cleanly without breaking
-        if (!token) {
-            return res.status(401).json({ 
-                success: false, 
-                message: "You are not logged in. Please log in to get access." 
-            });
-        }
-
-        // 2. Verify token
-        const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
-        // 3. Check if user still exists
-        const currentUser = await userModal.findById(decoded.id);
-        if (!currentUser) {
-            return res.status(401).json({ 
-                success: false, 
-                message: "The user belonging to this token no longer exists." 
-            });
-        }
-
-        // 4. GRANT ACCESS
-        req.user = currentUser;
-        next();
-    } catch (error) {
-        console.error("Auth Middleware Error:", error.message);
-        return res.status(401).json({ 
-            success: false, 
-            message: "Invalid token. Please log in again." 
-        });
+    // If no token was found at all in the headers
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Not authorized, missing session token" });
     }
 };
 
-module.exports = protect;
+module.exports = { protect };
