@@ -30,12 +30,12 @@ axios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-// Keep this base target configurations
+
 axios.defaults.baseURL = 'http://localhost:5000';
 
-// Your clean authentication guard mechanism
+
 const ProtectedRoute = () => {
-  const token = localStorage.getItem('token'); // Swap with your context state if preferred
+  const token = localStorage.getItem('token');
   return token ? <Outlet /> : <Navigate to="/auth" replace />;
 };
 
@@ -47,16 +47,13 @@ const StoriesRoutePlaceholder = () => (
 
 const router = createBrowserRouter([
   {
-    // 1. PUBLIC ROOT LEVEL: AuthPage is completely detached from layout components
     path: '/auth',
     element: <AuthPage />
   },
   {
-    // 2. PROTECTED WRAPPER FOR BOTH APP SHELLS
     element: <ProtectedRoute />,
     children: [
       {
-        /* Main Layout Grid Context Container Area */
         path: '/',
         element: <App />,
         children: [
@@ -66,7 +63,6 @@ const router = createBrowserRouter([
         ]
       },
       {
-        /* Isolated Full-Screen Studio Sandbox Sandbox Ecosystem */
         path: '/studio',
         element: <StudioPage />,
         children: [
@@ -80,7 +76,6 @@ const router = createBrowserRouter([
     ]
   },
   {
-    // Fallback: Bounce random URLs back to home/login
     path: '*',
     element: <Navigate to="/" replace />
   }

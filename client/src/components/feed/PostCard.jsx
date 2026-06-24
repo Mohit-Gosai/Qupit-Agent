@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import CommentSection from './CommentSection';
+import { Heart, LucideHeart,  MessageCircle} from "lucide-react"
 
 export default function PostCard({ post }) {
   const { _id, author, contentType, contentUrl, caption, createdAt } = post;
@@ -91,14 +92,14 @@ export default function PostCard({ post }) {
           onClick={handleLike}
           className={`flex items-center gap-1.5 bg-transparent border-none cursor-pointer transition-colors ${isLiked ? 'text-pink-500 font-bold' : 'hover:text-pink-400'}`}
         >
-          {isLiked ? '❤️' : '🤍'} <span>{likes.length}</span>
+          {isLiked ? <LucideHeart color='red'/> : <Heart/>} <span>{likes.length}</span>
         </button>
 
         <button
           onClick={() => setShowComments(!showComments)}
           className={`flex items-center gap-1.5 bg-transparent border-none cursor-pointer transition-colors ${showComments ? 'text-purple-400 font-bold' : 'hover:text-purple-400'}`}
         >
-          💬 <span>{comments.length}</span>
+          <MessageCircle/> <span>{comments.length}</span>
         </button>
       </div>
 

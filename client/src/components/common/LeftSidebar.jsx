@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; 
+import { HomeIcon, MessageCircleIcon, NotebookPen, User, SquareArrowRightExitIcon } from "lucide-react"
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const LeftSidebar = () => {
           to="/home" 
           className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium transition-all group"
         >
-          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110">🏠</span>
+          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110"><HomeIcon color='pink'/></span>
           <span>Home Feed</span>
         </Link>
 
@@ -56,14 +57,14 @@ const LeftSidebar = () => {
           to="/studio" 
           className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFB7C5]/10 border border-[#FFB7C5]/20 hover:bg-[#FFB7C5]/20 text-sm font-bold text-[#FFB7C5] transition-all group"
         >
-          <span className="transition-transform group-hover:rotate-12">✨</span>
+          <span className="transition-transform group-hover:rotate-12"><NotebookPen color='pink' /></span>
           <span>Create Letter</span>
         </Link>
         <Link 
           to="/messages" 
           className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFB7C5]/10 border border-[#FFB7C5]/20 hover:bg-[#FFB7C5]/20 text-sm font-bold text-[#FFB7C5] transition-all group"
         >
-          <span className="transition-transform group-hover:rotate-12">✨</span>
+          <span className="transition-transform group-hover:rotate-12"><MessageCircleIcon color='pink' /></span>
           <span>Chats</span>
         </Link>
 
@@ -74,7 +75,7 @@ const LeftSidebar = () => {
             isProfileLoading ? 'opacity-50 pointer-events-none animate-pulse font-mono text-xs' : ''
           }`}
         >
-          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110">👤</span>
+          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110"><User color='pink'/></span>
           <span>{profileLabel}</span>
         </Link>
 
@@ -83,7 +84,7 @@ const LeftSidebar = () => {
           onClick={handleLogout}
           className="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-sm font-medium text-red-400 transition-all group border-none bg-transparent text-left cursor-pointer w-full"
         >
-          <span>🚪</span>
+          <span><SquareArrowRightExitIcon color='pink' /></span>
           <span>Sign Out</span>
         </button>
 

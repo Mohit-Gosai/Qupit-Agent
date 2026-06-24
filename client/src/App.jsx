@@ -4,32 +4,26 @@ import { Outlet } from 'react-router-dom';
 import MainNavbar from './components/common/MainNavbar';
 import LeftSidebar from './components/common/LeftSidebar';
 import RightSidebar from './components/common/RightSidebar';
-import CreateFAB from './components/common/CreateFAB'; // ◄ Import the floating menu here
+import CreateFAB from './components/common/CreateFAB'; 
 
 export default function App() {
   return (
     <div className="min-h-screen bg-[#0D0B14] text-white flex flex-col font-sans relative">
-      {/* 1. Global Navigation Bar */}
       <MainNavbar />
 
-      {/* 2. Structured App Layout Grid */}
       <div className="flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 px-4 py-6">
         
-        {/* Left column navigation component */}
         <LeftSidebar />
 
-        {/* Center column core content sub-routes */}
         <main className="col-span-1 md:col-span-2 space-y-6">
           <Outlet />
         </main>
 
-        {/* Right column discovery content component */}
         <RightSidebar />
 
       </div>
 
-      {/* 3. Global Floating Interaction Deck */}
-      <CreateFAB /> {/* ◄ Persistent action layer floating across all page states */}
+      <CreateFAB />
     </div>
   );
 }

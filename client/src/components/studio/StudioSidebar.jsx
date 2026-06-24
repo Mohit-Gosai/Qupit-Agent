@@ -1,17 +1,18 @@
 // src/components/studio/StudioSidebar.jsx
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { MoveLeft, LetterText, Mountain, Video, StarPlus, PanelRightIcon } from "lucide-react"
 
 const StudioSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-    { id: 'letter', label: '✨ Make Letter', path: '/studio/letter' },
-    { id: 'image', label: '🖼️ Image Canvas', path: '/studio/image' },
-    { id: 'video', label: '🎬 Video Sequencer', path: '/studio/video' },
-    { id: 'post', label: '📝 General Post', path: '/studio/post' },
-    { id: 'stories', label: '📱 Stories Node', path: '/studio/stories', isDraft: true },
+    { id: 'letter', label: 'Make Letter', path: '/studio/letter', icon: <LetterText color='pink' /> },
+    { id: 'image', label: 'Image Canvas', path: '/studio/image', icon: <Mountain color='pink' /> },
+    { id: 'video', label: 'Video Sequencer', path: '/studio/video', icon: <Video color='pink' /> },
+    { id: 'post', label: 'General Post', path: '/studio/post', icon: <StarPlus color='pink' /> },
+    { id: 'stories', label: 'Stories Node', path: '/studio/stories', isDraft: true, icon: <PanelRightIcon color='pink'/> },
   ];
 
   return (
@@ -32,7 +33,10 @@ const StudioSidebar = () => {
                 : 'bg-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5'
             }`}
           >
-            <span>{item.label}</span>
+            <span className="flex items-center gap-2">
+              {item.icon}
+              {item.label}
+              </span>
             {item.isDraft && (
               <span className="text-[8px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase font-mono font-black ml-2 tracking-wider">
                 Soon

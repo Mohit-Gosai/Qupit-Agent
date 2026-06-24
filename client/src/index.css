@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Inside src/index.css */
 @layer utilities {
   @keyframes slideUp {
     from {

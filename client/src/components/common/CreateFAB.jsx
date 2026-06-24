@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import {Plus, Text, MountainSnowIcon, NotebookPen } from "lucide-react"
 
 const CreateFAB = () => {
   const { token, user } = useAuth(); // ◄ Extract active authenticated user state
@@ -41,7 +42,7 @@ const CreateFAB = () => {
             onClick={() => handleAction(`/profile/${activeUsername}`)} // ◄ Dynamic Profile Route
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs text-gray-200 hover:bg-white/5 transition-colors bg-transparent border-none cursor-pointer"
           >
-            <span className="text-sm">📝</span>
+            <span className="text-sm"><Text color='pink' /></span>
             <div>
               <p className="font-bold">Write Text Post</p>
               <p className="text-[10px] text-gray-500">Publish a text loop to profile</p>
@@ -52,7 +53,7 @@ const CreateFAB = () => {
             onClick={() => handleAction(`/profile/${activeUsername}`)} // ◄ Dynamic Profile Route
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs text-gray-200 hover:bg-white/5 transition-colors bg-transparent border-none cursor-pointer"
           >
-            <span className="text-sm">🖼️</span>
+            <span className="text-sm"><MountainSnowIcon color='pink' /></span>
             <div>
               <p className="font-bold">Post Image / Video</p>
               <p className="text-[10px] text-gray-500">Upload mixed visual media</p>
@@ -63,7 +64,7 @@ const CreateFAB = () => {
             onClick={() => handleAction('/studio')} 
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs text-amber-300 hover:bg-amber-500/5 transition-colors bg-transparent border-none cursor-pointer"
           >
-            <span className="text-sm">✨</span>
+            <span className="text-sm"><NotebookPen color='pink' /></span>
             <div>
               <p className="font-bold text-[#FFB7C5]">Make Letter</p>
               <p className="text-[10px] text-purple-400/60">Launch canvas engine builder</p>
@@ -78,7 +79,7 @@ const CreateFAB = () => {
           isOpen ? 'rotate-45 border-pink-500 scale-95' : 'border-purple-500/30 hover:scale-105'
         }`}
       >
-        ➕
+        <span className="text-2xl"><Plus color='pink' /></span>
       </button>
 
     </div>
