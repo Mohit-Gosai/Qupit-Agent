@@ -2,9 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const { register, login } = require('../controllers/authController');
+const upload = require('../config/cloudinary'); // Import the Cloudinary config
 
 // Map endpoints to their matching controller functions
-router.post('/signup', register);
+router.post('/signup', upload.single('avatar'), register);
 router.post('/login', login);
 
 module.exports = router;

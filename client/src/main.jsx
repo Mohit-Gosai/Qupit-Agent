@@ -16,6 +16,8 @@ import LetterBuilder from './components/studio/LetterBuilder.jsx';
 import ImageCanvas from './components/studio/ImageCanvas.jsx';
 import GeneralPostForm from './components/studio/GeneralPostForm.jsx';
 import VideoSequencer from './components/studio/VideoSequence.jsx';
+import ChatContainer from './components/chats/ChatConteinar.jsx';
+import UserDetailsPage from './routes/UserDetailsPage.jsx';
 
 
 axios.interceptors.request.use(
@@ -60,6 +62,8 @@ const router = createBrowserRouter([
           { path: '/', element: <Navigate to="/home" replace /> },
           { path: 'home', element: <HomeFeed /> },
           { path: 'profile/:username', element: <ProfilePage /> },
+          { path: '/messages', element: <ChatContainer /> },
+          { path: 'profile/:username/details', element: <UserDetailsPage /> }
         ]
       },
       {

@@ -1,13 +1,14 @@
 // src/components/common/LeftSidebar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; 
+import { useAuth } from '../../context/AuthContext';
 import { HomeIcon, MessageCircleIcon, NotebookPen, User, SquareArrowRightExitIcon } from "lucide-react"
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  
+  const isActive = (path) => window.location.pathname === path;
+
   // Local states to track link label and path
   const [profileLabel, setProfileLabel] = useState('Profile is loading...');
   const [profilePath, setProfilePath] = useState('#');
@@ -35,52 +36,53 @@ const LeftSidebar = () => {
   }, [user]); // Fires instantly whenever the global user context state changes
 
   const handleLogout = () => {
-    logout(); 
+    logout();
     navigate('/auth');
   };
 
   return (
     <aside className="hidden md:block md:col-span-1 space-y-4">
       <nav className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-2 sticky top-24">
-        
+
         {/* Home Feed */}
-        <Link 
-          to="/home" 
+        <Link
+          to="/home"
           className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium transition-all group"
         >
-          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110"><HomeIcon color='pink'/></span>
+          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110"><HomeIcon color='pink' /></span>
           <span>Home Feed</span>
         </Link>
 
         {/* Create Letter */}
-        <Link 
-          to="/studio" 
-          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFB7C5]/10 border border-[#FFB7C5]/20 hover:bg-[#FFB7C5]/20 text-sm font-bold text-[#FFB7C5] transition-all group"
+        <Link
+          to="/studio"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium transition-all group"
         >
           <span className="transition-transform group-hover:rotate-12"><NotebookPen color='pink' /></span>
           <span>Create Letter</span>
         </Link>
-        <Link 
-          to="/messages" 
-          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFB7C5]/10 border border-[#FFB7C5]/20 hover:bg-[#FFB7C5]/20 text-sm font-bold text-[#FFB7C5] transition-all group"
+
+
+          <Link
+          to="/messages"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium transition-all group"
         >
           <span className="transition-transform group-hover:rotate-12"><MessageCircleIcon color='pink' /></span>
           <span>Chats</span>
         </Link>
 
         {/* Dynamic My Profile Link */}
-        <Link 
-          to={profilePath} 
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium transition-all group ${
-            isProfileLoading ? 'opacity-50 pointer-events-none animate-pulse font-mono text-xs' : ''
-          }`}
+        <Link
+          to={profilePath}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium transition-all group ${isProfileLoading ? 'opacity-50 pointer-events-none animate-pulse font-mono text-xs' : ''
+            }`}
         >
-          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110"><User color='pink'/></span>
+          <span className="text-[#FFB7C5] transition-transform group-hover:scale-110"><User color='pink' /></span>
           <span>{profileLabel}</span>
         </Link>
 
         {/* Sign Out */}
-        <button 
+        <button
           onClick={handleLogout}
           className="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-sm font-medium text-red-400 transition-all group border-none bg-transparent text-left cursor-pointer w-full"
         >
